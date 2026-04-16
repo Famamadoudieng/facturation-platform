@@ -33,7 +33,13 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-temp-key-for-build')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 #ALLOWED_HOSTS = []
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
+#ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'facturation-platform.onrender.com',
+    '.onrender.com',  # ✅ Permet tous les sous-domaines Render
+]
 
 
 # Application definition
