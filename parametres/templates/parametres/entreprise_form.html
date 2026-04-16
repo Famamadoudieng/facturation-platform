@@ -1,0 +1,43 @@
+<!-- parametres/templates/parametres/entreprise_form.html -->
+{% extends 'base.html' %}
+
+{% block title %}Modifier l'entreprise{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit"></i> Modifier l'entreprise
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nom de l'entreprise</label>
+                        {{ form.nom }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Slug (identifiant unique)</label>
+                        {{ form.slug }}
+                        <small class="text-muted">Ex: mon-entreprise, ma-societe</small>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'parametres:entreprise_list' %}" class="btn btn-secondary">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

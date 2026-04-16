@@ -1,0 +1,80 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Ajouter un produit à la facture {{ facture.numero }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Ajouter un produit/service</h4>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">Facture : <strong>{{ facture.numero }}</strong></p>
+                <p class="mb-3">Client : <strong>{{ facture.client.nom }}</strong></p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Produit / Service</label>
+                        <select name="produit" id="produit" class="form-select" required>
+                            <option value="">Choisir...</option>
+                            {% for produit in produits %}
+                            <option value="{{ produit.id }}" data-tva="{{ tva_default }}">
+                                {{ produit.nom }} {% if produit.code %}({{ produit.code }}){% endif %}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Désignation (modifiable)</label>
+                        <input type="text" name="designation" id="designation" class="form-control" placeholder="Description du produit/service">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Quantité</label>
+                            <input type="number" name="quantite" class="form-control" value="1" min="1" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Prix HT (FCFA)</label>
+                            <input type="number" step="0.01" name="prix" id="prix" class="form-control" value="0" required>
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i> 
+                        La designation, le prix et la quantité sont libres. Modifiez-les selon votre besoin.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'factures:detail' facture.pk %}" class="btn btn-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('produit').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const tva = selectedOption.getAttribute('data-tva');
+        const nom = selectedOption.text.split('(')[0].trim();
+        
+        if (tva) {
+            document.getElementById('tva').value = tva;
+        }
+        
+        const designationInput = document.getElementById('designation');
+        if (!designationInput.value) {
+            designationInput.value = nom;
+        }
+    });
+</script>
+{% endblock %}

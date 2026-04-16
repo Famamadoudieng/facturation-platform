@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Détail du produit{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">{{ produit.nom }}</h4>
+            </div>
+            <div class="card-body">
+                <!-- ❌ Supprimé: Code -->
+                
+                <div class="row mb-3">
+                    <div class="col-md-3"><strong>Description :</strong></div>
+                    <div class="col-md-9">{{ produit.description|linebreaks|default:"Aucune description" }}</div>
+                </div>
+                
+                <hr>
+                
+                <!-- ❌ Supprimé: TVA par défaut -->
+                <!-- ❌ Supprimé: Date création -->
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Information :</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Le prix est saisi directement dans la facture</li>
+                        <li>La TVA est choisie au niveau de la facture (0%, 10% ou 18%)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'produits:update' produit.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </a>
+                    <a href="{% url 'produits:delete' produit.pk %}" class="btn btn-danger">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </a>
+                    <a href="{% url 'produits:list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Paramètres{% endblock %}
+
+{% block content %}
+<div>
+    <h1 class="mb-4">
+        <i class="fas fa-cog text-primary me-2"></i>
+        Paramètres
+    </h1>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-building fa-3x text-primary mb-3"></i>
+                    <h4>Informations de l'entreprise</h4>
+                    <p>Gérez les informations de votre société qui apparaîtront sur les factures</p>
+                    <a href="{% url 'parametres:entreprise' %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Configurer
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-invoice-dollar fa-3x text-primary mb-3"></i>
+                    <h4>Paramètres de facturation</h4>
+                    <p>Configurez la numérotation, les échéances et la TVA par défaut</p>
+                    <a href="{% url 'parametres:facturation' %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Configurer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

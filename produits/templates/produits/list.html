@@ -1,0 +1,131 @@
+<!-- Version avec plus d'informations -->
+{% extends 'base.html' %}
+
+{% block title %}Produits / Services{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-box text-primary me-2"></i>
+        Produits / Services
+        <span class="badge bg-secondary ms-2">{{ total_produits }}</span>
+    </h1>
+    <a href="{% url 'produits:create' %}" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>Ajouter
+    </a>
+</div>
+
+<!-- Recherche -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-12">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Rechercher un produit par nom ou description..." value="{{ search_query }}">
+                    <button type="submit" class="btn btn-primary">Rechercher</button>
+                    {% if search_query %}
+                        <a href="{% url 'produits:list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Réinitialiser
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Liste des produits -->
+<div class="card">
+    <div class="card-body">
+        {% if produits %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Nom</th>
+                        <th>Description</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produit in produits %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td><strong>{{ produit.nom }}</strong></td>
+                        <td>
+                            {% if produit.description %}
+                                {{ produit.description|truncatechars:80 }}
+                            {% else %}
+                                <span class="text-muted">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'produits:update' produit.pk %}" class="btn btn-sm btn-warning" title="Modifier">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'produits:delete' produit.pk %}" class="btn btn-sm btn-danger" title="Supprimer">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Aucun produit trouvé</h4>
+            <p class="text-muted">Commencez par ajouter vos premiers produits ou services.</p>
+            <a href="{% url 'produits:create' %}" class="btn btn-primary mt-2">
+                <i class="fas fa-plus me-2"></i>Ajouter un produit
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

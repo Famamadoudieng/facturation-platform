@@ -1,0 +1,401 @@
+<!-- templates/base.html - Version sans templatetags -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Facturation Pro{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS + Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: var(--sidebar-width);
+            background: linear-gradient(135deg, #1e2a3a 0%, #0f172a 100%);
+            color: white;
+            transition: all 0.3s;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        
+        .sidebar-logo {
+            max-width: 120px;
+            max-height: 80px;
+            margin-bottom: 10px;
+            object-fit: contain;
+        }
+        
+        .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+            color: white;
+        }
+        
+        .sidebar-header p {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin: 0;
+            color: white;
+        }
+        
+        .sidebar-menu {
+            padding: 1rem 0;
+        }
+        
+        .sidebar-menu .menu-item {
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white !important;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-menu .menu-item:hover {
+            background: rgba(255,255,255,0.1);
+            color: white !important;
+            border-left-color: var(--primary-color);
+        }
+        
+        .sidebar-menu .menu-item.active {
+            background: rgba(13,110,253,0.2);
+            color: white !important;
+            border-left-color: var(--primary-color);
+        }
+        
+        .sidebar-menu .menu-item i {
+            width: 24px;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .sidebar-menu .menu-item span {
+            color: white;
+        }
+        
+        /* Main content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* Top navbar */
+        .top-navbar {
+            background: white;
+            border-radius: 10px;
+            padding: 0.75rem 1.5rem;
+            margin-bottom: 20px;
+            margin-top: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                margin-left: calc(var(--sidebar-width) * -1);
+            }
+            .sidebar.show {
+                margin-left: 0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .menu-toggle {
+                display: block !important;
+            }
+        }
+        
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+        
+        hr {
+            margin: 15px 20px;
+            border-color: rgba(255,255,255,0.1);
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <!-- Logo dynamique depuis le context processor -->
+        {% if entreprise_logo %}
+            <img src="{{ entreprise_logo.url }}" class="sidebar-logo" alt="Logo">
+        {% else %}
+            <i class="fas fa-file-invoice-dollar fa-2x" style="color: #0d6efd;"></i>
+        {% endif %}
+        <h3>{{ entreprise_nom }}</h3>
+        <p>Gestion de factures</p>
+    </div>
+    
+    <!-- templates/base.html - Modifier la sidebar -->
+
+    <div class="sidebar-menu">
+    
+        <a href="/dashboard/" class="menu-item">
+            <i class="fas fa-chart-line"></i>
+            <span>Tableau de bord</span>
+        </a>
+        <a href="/factures/" class="menu-item">
+            <i class="fas fa-file-invoice"></i>
+            <span>Factures</span>
+        </a>
+        <a href="/clients/" class="menu-item">
+            <i class="fas fa-users"></i>
+            <span>Clients</span>
+        </a>
+        <a href="/produits/" class="menu-item">
+            <i class="fas fa-box"></i>
+            <span>Produits</span>
+        </a>
+        <a href="/paiements/" class="menu-item">
+            <i class="fas fa-credit-card"></i>
+            <span>Paiements</span>
+        </a>
+    
+        <!-- ✅ Cacher le sélecteur d'entreprise pour les lecteurs -->
+        {% if not user.profile.role == 'lecteur' and not user.profile.role == 'comptable' %}
+        <hr>
+        <div class="px-3 py-2">
+            <small class="text-muted" style="color: rgba(255,255,255,0.5);">ENTREPRISE</small>
+        </div>
+
+        <div class="px-2 mb-2">
+            <div class="dropdown w-100">
+                <button class="btn btn-sm btn-outline-light dropdown-toggle w-100 text-start" 
+                        type="button" data-bs-toggle="dropdown" 
+                        style="background-color: rgba(255,255,255,0.1); border: none;">
+                    <i class="fas fa-building me-2"></i>
+                    {{ request.entreprise_courante.nom|default:"Sélectionner" }}
+                </button>
+                <ul class="dropdown-menu w-100">
+                    {% for entreprise in user.entreprises_acces.all %}
+                    <li>
+                        <a class="dropdown-item" href="{% url 'parametres:changer_entreprise' entreprise.id %}">
+                            <i class="fas fa-building me-2"></i>
+                            {{ entreprise.nom }}
+                            {% if entreprise.id == request.entreprise_courante.id %}
+                                <i class="fas fa-check text-success float-end"></i>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'parametres:entreprise_list' %}">
+                            <i class="fas fa-cog"></i> Gérer les entreprises
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'parametres:creer_entreprise' %}">
+                            <i class="fas fa-plus"></i> Nouvelle entreprise
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <hr>
+
+        <!-- ✅ Cacher la section ADMINISTRATION pour les non-admins -->
+        {% if user.is_staff and not user.profile.role == 'lecteur' and not user.profile.role == 'comptable' %}
+        <div class="px-3 py-2">
+            <small class="text-muted" style="color: rgba(255,255,255,0.5);">ADMINISTRATION</small>
+        </div>
+    
+        <a href="{% url 'parametres:profil_liste' %}" class="menu-item">
+            <i class="fas fa-users"></i>
+            <span>Utilisateurs</span>
+        </a>
+        <a href="{% url 'parametres:entreprise_list' %}" class="menu-item">
+            <i class="fas fa-building"></i>
+            <span>Entreprises</span>
+        </a>
+    
+        <a href="/parametres/" class="menu-item">
+            <i class="fas fa-cog"></i>
+            <span>Paramètres</span>
+        </a>
+        {% endif %}
+        <hr>
+
+        <a href="/logout/" class="menu-item">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Déconnexion</span>
+        </a>
+    </div>
+        <hr>
+
+        
+    </div>
+
+<!-- Main content -->
+<div class="main-content">
+    <div class="top-navbar">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h4 class="page-title">{% block page_title %}Dashboard{% endblock %}</h4>
+        <div class="user-info">
+            <!-- ✅ Sélecteur d'entreprise -->
+            {% if request.user.is_authenticated and user.entreprises_acces.all and user.profile.role != 'lecteur' and user.profile.role != 'comptable' %}
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" 
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-building"></i> 
+                    {{ request.entreprise_courante.nom|default:"Entreprise" }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    {% for entreprise in user.entreprises_acces.all %}
+                    <li>
+                        <a class="dropdown-item" href="{% url 'parametres:changer_entreprise' entreprise.id %}">
+                            <i class="fas fa-building me-2"></i>
+                            {{ entreprise.nom }}
+                            {% if entreprise.id == request.entreprise_courante.id %}
+                                <i class="fas fa-check text-success float-end"></i>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endfor %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'parametres:entreprise_list' %}">
+                            <i class="fas fa-cog"></i> Gérer
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="{% url 'parametres:creer_entreprise' %}">
+                            <i class="fas fa-plus"></i> Créer
+                        </a>
+                    </li>
+                </ul>
+            </div>
+    {% endif %}
+    
+    <span><i class="fas fa-user"></i> {{ request.user.username }}</span>
+    <div class="user-avatar">
+        {{ request.user.username|first|upper }}
+    </div>
+</div>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    {% block content %}
+    {% endblock %}
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Menu toggle pour mobile
+    document.getElementById('menuToggle').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('show');
+    });
+    
+    // Fermer le menu en cliquant à l'extérieur sur mobile
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const toggle = document.getElementById('menuToggle');
+        if (window.innerWidth <= 768) {
+            if (!sidebar.contains(event.target) && !toggle.contains(event.target)) {
+                sidebar.classList.remove('show');
+            }
+        }
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

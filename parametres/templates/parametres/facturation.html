@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block title %}Paramètres - Facturation{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Paramètres de facturation</h4>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Numérotation des factures -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-hashtag me-2"></i>Numérotation des factures</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Préfixe</label>
+                            <input type="text" name="prefixe_facture" class="form-control" value="{{ facturation.prefixe_facture }}" placeholder="Ex: F, INV">
+                            <small class="text-muted">Exemple: F-2026-0001</small>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Séparateur</label>
+                            <input type="text" name="separateur" class="form-control" value="{{ facturation.separateur }}" maxlength="5">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Prochain numéro</label>
+                            <input type="number" name="prochain_numero" class="form-control" value="{{ facturation.prochain_numero }}" min="1">
+                        </div>
+                        <div class="col-md-3 mb-3 d-flex align-items-center">
+                            <div class="form-check">
+                                <input type="checkbox" name="annee_dans_numero" class="form-check-input" id="annee_dans_numero" {% if facturation.annee_dans_numero %}checked{% endif %}>
+                                <label class="form-check-label" for="annee_dans_numero">
+                                    Inclure l'année
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="alert alert-info mt-2">
+                        <i class="fas fa-info-circle"></i> Format actuel : 
+                        <strong>
+                            {% if facturation.annee_dans_numero %}
+                                {{ facturation.prefixe_facture }}{{ facturation.separateur }}2026{{ facturation.separateur }}{{ facturation.prochain_numero|stringformat:"04d" }}
+                            {% else %}
+                                {{ facturation.prefixe_facture }}{{ facturation.separateur }}{{ facturation.prochain_numero|stringformat:"04d" }}
+                            {% endif %}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Échéances -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Échéances</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Délai de paiement par défaut</label>
+                            <div class="input-group">
+                                <input type="number" name="delai_paiement_jours" class="form-control" value="{{ facturation.delai_paiement_jours }}" min="0">
+                                <span class="input-group-text">jours</span>
+                            </div>
+                            <small class="text-muted">Délai à compter de la date de facture</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TVA -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-percent me-2"></i>TVA</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">TVA par défaut</label>
+                            <div class="input-group">
+                                <input type="number" name="tva_par_defaut" class="form-control" value="{{ facturation.tva_par_defaut }}" step="0.01">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Automatisations -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>Automatisations</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="envoyer_email_auto" class="form-check-input" id="envoyer_email_auto" {% if facturation.envoyer_email_auto %}checked{% endif %}>
+                                <label class="form-check-label" for="envoyer_email_auto">
+                                    <i class="fas fa-envelope"></i> Envoyer automatiquement les factures par email
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="rappel_paiement_auto" class="form-check-input" id="rappel_paiement_auto" {% if facturation.rappel_paiement_auto %}checked{% endif %}>
+                                <label class="form-check-label" for="rappel_paiement_auto">
+                                    <i class="fas fa-bell"></i> Envoyer des rappels de paiement automatiques
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jours avant envoi du rappel</label>
+                            <input type="number" name="jours_avant_relance" class="form-control" value="{{ facturation.jours_avant_relance }}" min="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Devise -->
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0"><i class="fas fa-dollar-sign me-2"></i>Devise</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Devise par défaut</label>
+                            <select name="devise" class="form-select">
+                                <option value="EUR" {% if facturation.devise == 'EUR' %}selected{% endif %}>Euro (€)</option>
+                                <option value="USD" {% if facturation.devise == 'USD' %}selected{% endif %}>Dollar US ($)</option>
+                                <option value="GBP" {% if facturation.devise == 'GBP' %}selected{% endif %}>Livre sterling (£)</option>
+                                <option value="XOF" {% if facturation.devise == 'XOF' %}selected{% endif %}>Franc CFA (FCFA)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Enregistrer les paramètres
+                </button>
+                <a href="{% url 'parametres:index' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Annuler
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

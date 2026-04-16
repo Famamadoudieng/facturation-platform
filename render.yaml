@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: facturation-platform
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn --chdir config config.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.14
+    autoDeploy: true

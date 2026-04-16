@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Champ Client -->
+                    <div class="mb-3">
+                        <label for="{{ form.client.id_for_label }}" class="form-label">
+                            Client <span class="text-danger">*</span>
+                        </label>
+                        {{ form.client }}
+                        {% if form.client.errors %}
+                            <div class="text-danger small">{{ form.client.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Date facture -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.date_facture.id_for_label }}" class="form-label">
+                                Date facture <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_facture }}
+                            {% if form.date_facture.errors %}
+                                <div class="text-danger small">{{ form.date_facture.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Date échéance -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.date_echeance.id_for_label }}" class="form-label">
+                                Date échéance <span class="text-danger">*</span>
+                            </label>
+                            {{ form.date_echeance }}
+                            {% if form.date_echeance.errors %}
+                                <div class="text-danger small">{{ form.date_echeance.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- ✅ CHOIX TVA (important !) -->
+                    <div class="mb-3">
+                        <label for="{{ form.taux_tva.id_for_label }}" class="form-label">
+                            Taux TVA <span class="text-danger">*</span>
+                        </label>
+                        {{ form.taux_tva }}
+                        {% if form.taux_tva.errors %}
+                            <div class="text-danger small">{{ form.taux_tva.errors }}</div>
+                        {% endif %}
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i>
+                            Choisissez 0% pour les clients exonérés de TVA
+                        </small>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">
+                            Notes internes
+                        </label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div class="text-danger small">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Conditions -->
+                    <div class="mb-3">
+                        <label for="{{ form.conditions.id_for_label }}" class="form-label">
+                            Conditions de paiement
+                        </label>
+                        {{ form.conditions }}
+                        {% if form.conditions.errors %}
+                            <div class="text-danger small">{{ form.conditions.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Information :</strong> Après avoir créé la facture, 
+                        vous pourrez ajouter des produits. La TVA choisie s'appliquera 
+                        automatiquement sur le total HT.
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'factures:list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {{ button_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

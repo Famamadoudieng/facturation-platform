@@ -1,0 +1,54 @@
+<!-- paiements/templates/paiements/form_modifier.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header {% if est_acompte %}bg-warning{% else %}bg-success{% endif %} text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-edit"></i> {{ title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert {% if est_acompte %}alert-warning{% else %}alert-info{% endif %}">
+                    <strong>Facture :</strong> {{ facture.numero }}<br>
+                    <strong>Client :</strong> {{ facture.client.nom }}<br>
+                    <strong>Type :</strong> {{ facture.get_type_facture_display }}<br>
+                    <strong>Total TTC :</strong> {{ facture.total_ttc|floatformat:2 }} FCFA<br>
+                    <strong>Déjà payé :</strong> {{ facture.total_paye|floatformat:2 }} FCFA<br>
+                    <strong class="text-primary">Reste à payer :</strong> {{ reste_a_payer|floatformat:2 }} FCFA
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label class="form-label">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.help_text %}
+                            <small class="text-muted">{{ field.help_text }}</small>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="text-danger">{{ field.errors }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'factures:detail' facture.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn {% if est_acompte %}btn-warning{% else %}btn-success{% endif %}">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

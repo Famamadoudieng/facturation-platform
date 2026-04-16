@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .formset-row {
+        background-color: #f8f9fa;
+        margin-bottom: 15px;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+    }
+    .delete-row {
+        margin-top: 32px;
+    }
+    .formset-header {
+        background-color: #e9ecef;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="factureForm">
+                        {% csrf_token %}
+                        
+                        <!-- Formulaire principal -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h5><i class="fas fa-info-circle"></i> Informations générales</h5>
+                                <hr>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Client *</label>
+                                {{ form.client }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date facture *</label>
+                                {{ form.date_facture }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Date échéance *</label>
+                                {{ form.date_echeance }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Taux TVA *</label>
+                                {{ form.taux_tva }}
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle"></i>
+                                    Choisissez 0% pour les clients exonérés
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Notes internes</label>
+                                {{ form.notes }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Conditions de paiement</label>
+                                {{ form.conditions }}
+                            </div>
+                        </div>
+                        
+                        <!-- Lignes de facture -->
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h5><i class="fas fa-list"></i> Lignes de facture</h5>
+                                <hr>
+                            </div>
+                        </div>
+                        
+                        {{ formset.management_form }}
+                        
+                        <div class="formset-header row">
+                            <div class="col-md-4">Produit</div>
+                            <div class="col-md-3">Désignation</div>
+                            <div class="col-md-2">Quantité</div>
+                            <div class="col-md-2">Prix unitaire HT</div>
+                            <div class="col-md-1">Supprimer</div>
+                        </div>
+                        
+                        <div id="formset-container">
+                            {% for ligne_form in formset %}
+                            <div class="formset-row row" data-row-index="{{ forloop.counter0 }}">
+                                <div class="col-md-4">
+                                    {{ ligne_form.produit }}
+                                </div>
+                                <div class="col-md-3">
+                                    {{ ligne_form.designation }}
+                                </div>
+                                <div class="col-md-2">
+                                    {{ ligne_form.quantite }}
+                                </div>
+                                <div class="col-md-2">
+                                    {{ ligne_form.prix_unitaire_ht }}
+                                </div>
+                                <div class="col-md-1">
+                                    {% if ligne_form.instance.pk %}
+                                        <div class="form-check">
+                                            {{ ligne_form.DELETE }}
+                                            <label class="form-check-label text-danger">Supprimer</label>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% for hidden in ligne_form.hidden_fields %}
+                                    {{ hidden }}
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Récapitulatif -->
+                        <div class="alert alert-info mt-3" id="recapitulatif">
+                            <i class="fas fa-calculator"></i>
+                            <strong>Récapitulatif :</strong><br>
+                            Total HT : <strong id="total-ht">0</strong> FCFA<br>
+                            TVA (<span id="tva-taux">{{ form.instance.taux_tva|default:"18" }}</span>%) : <strong id="total-tva">0</strong> FCFA<br>
+                            <strong>Total TTC : <span id="total-ttc">0</span> FCFA</strong>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'factures:detail' object.pk %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> {{ button_text }}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Fonction pour calculer les totaux
+    function calculerTotaux() {
+        let totalHT = 0;
+        
+        // Parcourir toutes les lignes de facture
+        document.querySelectorAll('.formset-row').forEach(row => {
+            // Vérifier si la ligne n'est pas marquée pour suppression
+            const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="DELETE"]');
+            if (deleteCheckbox && deleteCheckbox.checked) {
+                return; // Ignorer cette ligne
+            }
+            
+            const quantiteInput = row.querySelector('input[name$="quantite"]');
+            const prixInput = row.querySelector('input[name$="prix_unitaire_ht"]');
+            
+            if (quantiteInput && prixInput) {
+                const quantite = parseFloat(quantiteInput.value) || 0;
+                const prix = parseFloat(prixInput.value) || 0;
+                totalHT += quantite * prix;
+            }
+        });
+        
+        // Récupérer le taux de TVA
+        const tauxTvaSelect = document.querySelector('select[name="taux_tva"]');
+        const tauxTVA = tauxTvaSelect ? parseFloat(tauxTvaSelect.value) : 18;
+        
+        // Calculer TVA et TTC
+        const totalTVA = totalHT * tauxTVA / 100;
+        const totalTTC = totalHT + totalTVA;
+        
+        // Mettre à jour l'affichage
+        document.getElementById('total-ht').textContent = totalHT.toFixed(2);
+        document.getElementById('total-tva').textContent = totalTVA.toFixed(2);
+        document.getElementById('total-ttc').textContent = totalTTC.toFixed(2);
+        document.getElementById('tva-taux').textContent = tauxTVA;
+    }
+    
+    // Écouter tous les changements
+    function initEventListeners() {
+        // Changement sur les quantités et prix
+        document.querySelectorAll('input[name$="quantite"], input[name$="prix_unitaire_ht"]').forEach(input => {
+            input.removeEventListener('change', calculerTotaux);
+            input.addEventListener('change', calculerTotaux);
+            input.removeEventListener('keyup', calculerTotaux);
+            input.addEventListener('keyup', calculerTotaux);
+        });
+        
+        // Changement sur le taux TVA
+        const tauxTvaSelect = document.querySelector('select[name="taux_tva"]');
+        if (tauxTvaSelect) {
+            tauxTvaSelect.removeEventListener('change', calculerTotaux);
+            tauxTvaSelect.addEventListener('change', calculerTotaux);
+        }
+        
+        // Changement sur les cases à cocher suppression
+        document.querySelectorAll('input[type="checkbox"][name$="DELETE"]').forEach(checkbox => {
+            checkbox.removeEventListener('change', calculerTotaux);
+            checkbox.addEventListener('change', calculerTotaux);
+        });
+    }
+    
+    // Observer les changements dans le DOM (pour les nouvelles lignes)
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                initEventListeners();
+                calculerTotaux();
+            }
+        });
+    });
+    
+    // Démarrer l'observation
+    observer.observe(document.getElementById('formset-container'), { childList: true, subtree: true });
+    
+    // Initialiser au chargement
+    document.addEventListener('DOMContentLoaded', function() {
+        initEventListeners();
+        calculerTotaux();
+    });
+    
+    // Auto-remplir la désignation quand on sélectionne un produit
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.matches('select[name$="produit"]')) {
+            const select = e.target;
+            const row = select.closest('.formset-row');
+            const designationInput = row.querySelector('input[name$="designation"]');
+            
+            if (select.value && designationInput) {
+                const selectedOption = select.options[select.selectedIndex];
+                designationInput.value = selectedOption.text;
+                calculerTotaux();
+            }
+        }
+    });
+</script>
+{% endblock %}

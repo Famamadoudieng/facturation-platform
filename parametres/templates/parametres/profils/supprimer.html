@@ -1,0 +1,29 @@
+<!-- parametres/templates/parametres/profils/supprimer.html -->
+{% extends 'base.html' %}
+
+{% block title %}Supprimer un utilisateur{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">Confirmation</h4>
+            </div>
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
+                <p>Êtes-vous sûr de vouloir supprimer l'utilisateur :</p>
+                <h5>{{ profile.user.username }}</h5>
+                <p class="text-muted">{{ profile.get_role_display }} - {{ profile.entreprise.nom|default:"-" }}</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="{% url 'parametres:profil_liste' %}" class="btn btn-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-danger">Confirmer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

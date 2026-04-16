@@ -1,0 +1,49 @@
+<!-- parametres/templates/parametres/creer_entreprise.html -->
+{% extends 'base.html' %}
+
+{% block title %}Créer une entreprise{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus-circle"></i> Créer mon entreprise
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nom de l'entreprise</label>
+                        {{ form.nom }}
+                        {% if form.nom.errors %}
+                            <div class="text-danger">{{ form.nom.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Identifiant unique (slug)</label>
+                        {{ form.slug }}
+                        <small class="text-muted">Ex: mon-entreprise, ma-societe</small>
+                        {% if form.slug.errors %}
+                            <div class="text-danger">{{ form.slug.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'parametres:selection_entreprise' %}" class="btn btn-secondary">
+                            Annuler
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Créer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

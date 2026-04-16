@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}Factures{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-file-invoice text-primary me-2"></i>
+        Factures
+        <span class="badge bg-secondary ms-2">{{ factures.count }}</span>
+    </h1>
+    <div>
+        <!-- ✅ Boutons d'export -->
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-success dropdown-toggle" 
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fas fa-download"></i> Exporter
+            </button>
+            <ul class="dropdown-menu">
+                <li>
+                    <a class="dropdown-item" href="{% url 'factures:export_csv' %}?{{ request.GET.urlencode }}">
+                        <i class="fas fa-file-csv"></i> CSV
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{% url 'factures:export_excel' %}?{{ request.GET.urlencode }}">
+                        <i class="fas fa-file-excel"></i> Excel
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" href="{% url 'factures:export_statistiques' %}">
+                        <i class="fas fa-chart-bar"></i> Statistiques
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item" href="{% url 'factures:export_comptabilite' %}">
+                        <i class="fas fa-book"></i> Export comptabilité
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <a href="{% url 'factures:create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouvelle facture
+        </a>
+    </div>
+</div>
+
+<!-- ✅ Filtres -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="mb-3"><i class="fas fa-filter"></i> Filtres</h5>
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Statut</label>
+                <select name="statut" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="proforma" {% if request.GET.statut == 'proforma' %}selected{% endif %}>Proforma</option>
+                    <option value="definitive" {% if request.GET.statut == 'definitive' %}selected{% endif %}>Définitive</option>
+                    <option value="envoyee" {% if request.GET.statut == 'envoyee' %}selected{% endif %}>Envoyée</option>
+                    <option value="partiel" {% if request.GET.statut == 'partiel' %}selected{% endif %}>Partiellement payée</option>
+                    <option value="payee" {% if request.GET.statut == 'payee' %}selected{% endif %}>Payée</option>
+                    <option value="impayee" {% if request.GET.statut == 'impayee' %}selected{% endif %}>Impayée</option>
+                    <option value="annulee" {% if request.GET.statut == 'annulee' %}selected{% endif %}>Annulée</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">Type</label>
+                <select name="type_facture" class="form-select">
+                    <option value="">Tous</option>
+                    <option value="proforma" {% if request.GET.type_facture == 'proforma' %}selected{% endif %}>Proforma</option>
+                    <option value="definitive" {% if request.GET.type_facture == 'definitive' %}selected{% endif %}>Définitive</option>
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Date début</label>
+                <input type="date" name="date_debut" class="form-control" value="{{ request.GET.date_debut }}">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Date fin</label>
+                <input type="date" name="date_fin" class="form-control" value="{{ request.GET.date_fin }}">
+            </div>
+            
+            <div class="col-md-2">
+                <label class="form-label">Client</label>
+                <select name="client" class="form-select">
+                    <option value="">Tous</option>
+                    {% for client in clients %}
+                    <option value="{{ client.id }}" {% if request.GET.client == client.id|stringformat:"s" %}selected{% endif %}>
+                        {{ client.nom }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-12">
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> Filtrer
+                    </button>
+                    <a href="{% url 'factures:list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Réinitialiser
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ✅ Liste des factures améliorée -->
+<div class="card">
+    <div class="card-body">
+        {% if factures %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>N° Facture</th>
+                        <th>Client</th>
+                        <th>Date</th>
+                        <th>Échéance</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th>Total TTC</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for facture in factures %}
+                    <tr>
+                        <td>
+                            <strong>{{ facture.numero }}</strong>
+                            {% if facture.est_archive %}
+                                <span class="badge bg-secondary ms-1">Archivée</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ facture.client.nom }}</td>
+                        <td>{{ facture.date_facture|date:"d/m/Y" }}</td>
+                        <td>{{ facture.date_echeance|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if facture.type_facture == 'proforma' %}
+                                <span class="badge bg-warning">Proforma</span>
+                            {% else %}
+                                <span class="badge bg-success">Définitive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{% if facture.statut == 'payee' %}success{% elif facture.statut == 'impayee' %}danger{% elif facture.statut == 'partiel' %}info{% elif facture.statut == 'envoyee' %}primary{% elif facture.statut == 'annulee' %}secondary{% else %}secondary{% endif %}">
+                                {{ facture.get_statut_display }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <strong>{{ facture.total_ttc|floatformat:2 }}</strong> FCFA
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'factures:detail' facture.pk %}" class="btn btn-info" title="Voir">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if facture.type_facture == 'proforma' and not facture.est_archive %}
+                                    <a href="{% url 'factures:update' facture.pk %}" class="btn btn-warning" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                {% endif %}
+                                <a href="{% url 'factures:pdf' facture.pk %}" class="btn btn-secondary" title="PDF" target="_blank">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                {% if facture.type_facture == 'proforma' and not facture.est_archive %}
+                                    <a href="{% url 'factures:delete' facture.pk %}" class="btn btn-danger" title="Supprimer" 
+                                       onclick="return confirm('Supprimer cette facture ?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="6" class="text-end">Total général :</th>
+                        <th class="text-end">{{ total_ttc|floatformat:2 }} FCFA</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <i class="fas fa-angle-double-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <i class="fas fa-angle-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <i class="fas fa-angle-right"></i>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            <i class="fas fa-angle-double-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-file-invoice fa-4x text-muted mb-3"></i>
+            <h4 class="text-muted">Aucune facture</h4>
+            <p class="text-muted">Commencez par créer votre première facture.</p>
+            <a href="{% url 'factures:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Nouvelle facture
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
