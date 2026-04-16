@@ -30,10 +30,5 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')),
     path('parametres/', include('parametres.urls')),
     path('paiements/', include('paiements.urls')),
-]
-
-if not settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-else:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

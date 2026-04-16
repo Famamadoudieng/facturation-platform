@@ -61,6 +61,8 @@ INSTALLED_APPS = [
     'parametres',
     'paiements',
     'accounts',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
