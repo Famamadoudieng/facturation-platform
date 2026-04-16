@@ -9,12 +9,15 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 from pathlib import Path
 import os 
 from decouple import config 
 import dj_database_url
 from django.contrib.messages import constants as messages
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -64,6 +67,19 @@ INSTALLED_APPS = [
     'cloudinary',
     'cloudinary_storage',
 ]
+
+cloudinary.config(
+    cloud_name = 'dhmquycvc',
+    api_key = '734991893622887',
+    api_secret = os.environ.get('CLOUDINARY_API_SECRET'),
+)
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dhmquycvc',
+    'API_KEY': '734991893622887',
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ AJOUTER CETTE LIGNE EN PREMIER
@@ -159,7 +175,7 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Configuration des messages
-from django.contrib.messages import constants as messages
+
 MESSAGE_TAGS = {
     messages.DEBUG: 'alert-info',
     messages.INFO: 'alert-info',
