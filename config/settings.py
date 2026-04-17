@@ -186,9 +186,9 @@ MESSAGE_TAGS = {
 }
 # AUTHENTIFICATION
 
-LOGIN_URL = '/admin/login/'
-LOGIN_REDIRECT_URL = '/dashboard/'
-LOGOUT_REDIRECT_URL = '/admin/login/'
+LOGIN_URL = '/connexion/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/connexion/'
 
 
 #MESSAGES

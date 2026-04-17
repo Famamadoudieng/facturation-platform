@@ -19,9 +19,12 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from dashboard.views import home, dashboard, connexion
 from .views import custom_logout
 
 urlpatterns = [
+    path('', dashboard, name='home'),  # ← Page d'accueil = dashboard
+    path('connexion/', connexion, name='connexion'),
     path('admin/', admin.site.urls),
     path('logout/', custom_logout, name='logout'),
     path('clients/', include('clients.urls')),

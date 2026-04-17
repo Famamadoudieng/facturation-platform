@@ -1,12 +1,40 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Sum, Count
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
 from datetime import datetime, timedelta
 from decimal import Decimal
 from factures.models import Facture, LigneFacture
 from clients.models import Client
 from produits.models import Produit
 from paiements.models import Paiement
+
+
+def connexion(request):
+    """Page de connexion personnalisée"""
+    if request.user.is_authenticated:
+        return redirect('/')  # ✅ Redirige vers la racine
+    
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, f'Bienvenue {user.username}!')
+            return redirect('/')  # ✅ Redirige vers la racine
+        else:
+            messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect')
+            return render(request, 'dashboard/connexion.html')
+    
+    return render(request, 'dashboard/connexion.html')
+
+@login_required
+def home(request):
+    """Page d'accueil après connexion"""
+    return render(request, 'dashboard/home.html')
 
 @login_required
 def dashboard(request):
@@ -122,4 +150,5 @@ def dashboard(request):
         'now': now,
     }
     
+   
     return render(request, 'dashboard/index.html', context)

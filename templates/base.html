@@ -303,10 +303,18 @@
         {% endif %}
         <hr>
 
-        <a href="/logout/" class="menu-item">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Déconnexion</span>
-        </a>
+        <!-- Dans la sidebar, remplace le lien de déconnexion par : -->
+        {% if user.is_authenticated %}
+            <a href="/logout/" class="menu-item">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Déconnexion</span>
+            </a>
+        {% else %}
+            <a href="/connexion/" class="menu-item">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Connexion</span>
+            </a>
+        {% endif %}     
     </div>
         <hr>
 
