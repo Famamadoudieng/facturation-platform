@@ -204,8 +204,8 @@
     <div class="sidebar-header">
         <!-- Logo dynamique depuis le context processor -->
         {% if entreprise_logo %}
-            <!--<img src="{{ entreprise_logo.url }}" class="sidebar-logo" alt="Logo">-->
-            <img src="{% static 'images/logo1.png' %}" class="sidebar-logo" alt="Logo">
+            <img src="{{ entreprise_logo.url }}" class="sidebar-logo" alt="Logo">
+            <!--<img src="{% static 'images/logo1.png' %}" class="sidebar-logo" alt="Logo">-->
             
         {% else %}
             <i class="fas fa-file-invoice-dollar fa-2x" style="color: #0d6efd;"></i>
