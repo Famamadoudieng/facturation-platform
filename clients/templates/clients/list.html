@@ -69,6 +69,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>Nom</th>
+                        <th>Personne ressource</th>
                         <th>Email</th>
                         <th>Téléphone</th>
                         <th>Adresse</th>
@@ -80,6 +81,9 @@
                     <tr>
                         <td>
                             <strong>{{ client.nom }}</strong>
+                        </td>
+                        <td>
+                            {{ client.personne_ressource|default:"-" }}
                         </td>
                         <td>
                             <a href="mailto:{{ client.email }}" class="text-decoration-none">

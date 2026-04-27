@@ -54,14 +54,20 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Date facture *</label>
-                                {{ form.date_facture }}
+                                <input type="date" name="date_facture" class="form-control" 
+                                    value="{{ form.date_facture.value|date:'Y-m-d' }}">
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Date échéance *</label>
-                                {{ form.date_echeance }}
+                                <input type="date" name="date_echeance" class="form-control" 
+                                    value="{{ form.date_echeance.value|date:'Y-m-d' }}">
                             </div>
                         </div>
                         
+                        <div class="alert alert-warning">
+                            Valeur TVA dans le formulaire: {{ form.taux_tva.value }}%
+                        </div>
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Taux TVA *</label>

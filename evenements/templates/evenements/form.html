@@ -1,0 +1,208 @@
+<!-- evenements/templates/evenements/form.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-group {
+        margin-bottom: 1rem;
+    }
+    .required-field::after {
+        content: " *";
+        color: red;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    {{ title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    
+                    <!-- Nom de l'événement -->
+                    <div class="mb-3">
+                        <label class="form-label required-field">Nom de l'événement</label>
+                        {{ form.nom }}
+                        {% if form.nom.errors %}
+                            <div class="text-danger small">{{ form.nom.errors }}</div>
+                        {% endif %}
+                        <small class="text-muted">Ex: Séminaire, Mariage ...</small>
+                    </div>
+                    
+                    
+                    
+                    <div class="row">
+                        <!-- Client -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required-field">Client</label>
+                            {{ form.client }}
+                            {% if form.client.errors %}
+                                <div class="text-danger small">{{ form.client.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Date début -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label required-field">Date de début</label>
+                            {{ form.date_debut }}
+                            {% if form.date_debut.errors %}
+                                <div class="text-danger small">{{ form.date_debut.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Date fin -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date de fin</label>
+                            {{ form.date_fin }}
+                            {% if form.date_fin.errors %}
+                                <div class="text-danger small">{{ form.date_fin.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Optionnel</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Heure début -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Heure de début</label>
+                            {{ form.heure_debut }}
+                            {% if form.heure_debut.errors %}
+                                <div class="text-danger small">{{ form.heure_debut.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Optionnel</small>
+                        </div>
+                        
+                        <!-- Heure fin -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Heure de fin</label>
+                            {{ form.heure_fin }}
+                            {% if form.heure_fin.errors %}
+                                <div class="text-danger small">{{ form.heure_fin.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Optionnel</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Lieu -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Lieu</label>
+                            {{ form.lieu }}
+                            {% if form.lieu.errors %}
+                                <div class="text-danger small">{{ form.lieu.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Nombre de personnes -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nombre de personnes</label>
+                            {{ form.nombre_personnes }}
+                            {% if form.nombre_personnes.errors %}
+                                <div class="text-danger small">{{ form.nombre_personnes.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Adresse complète -->
+                    <div class="mb-3">
+                        <label class="form-label">Adresse complète</label>
+                        {{ form.adresse }}
+                        {% if form.adresse.errors %}
+                            <div class="text-danger small">{{ form.adresse.errors }}</div>
+                        {% endif %}
+                        <small class="text-muted">Adresse détaillée du lieu de l'événement</small>
+                    </div>
+                    
+                    <div class="row">
+                        <!-- Budget prévu -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Budget prévu (FCFA)</label>
+                            {{ form.budget_prevu }}
+                            {% if form.budget_prevu.errors %}
+                                <div class="text-danger small">{{ form.budget_prevu.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Statut -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Statut</label>
+                            {{ form.statut }}
+                            {% if form.statut.errors %}
+                                <div class="text-danger small">{{ form.statut.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Notes -->
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div class="text-danger small">{{ form.notes.errors }}</div>
+                        {% endif %}
+                        <small class="text-muted">Informations supplémentaires, menu, contraintes...</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'evenements:liste' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> {{ button_text }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+
+<script>
+    // Validation du formulaire
+    (function() {
+        'use strict';
+        const forms = document.querySelectorAll('.needs-validation');
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+    
+    // Auto-remplir l'adresse si le lieu change
+    document.addEventListener('DOMContentLoaded', function() {
+        const lieuInput = document.querySelector('[name="lieu"]');
+        const adresseInput = document.querySelector('[name="adresse"]');
+        
+        if (lieuInput && adresseInput) {
+            lieuInput.addEventListener('change', function() {
+                if (this.value && !adresseInput.value) {
+                    adresseInput.value = this.value;
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

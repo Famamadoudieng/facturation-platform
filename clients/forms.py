@@ -5,11 +5,12 @@ from .models import Client
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client
-        fields = ['nom', 'email', 'telephone', 'adresse']
+        fields = ['nom', 'personne_ressource', 'email', 'telephone', 'adresse']
         widgets = {
             'adresse': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Adresse complète du client'}),
             'nom': forms.TextInput(attrs={'placeholder': 'Nom du client'}),
             'email': forms.EmailInput(attrs={'placeholder': 'email@exemple.com'}),
+            'personne_ressource': forms.TextInput(attrs={'class': 'form-control', 'required': False}),
             'telephone': forms.TextInput(attrs={'placeholder': 'Numéro de téléphone'}),
         }
         labels = {

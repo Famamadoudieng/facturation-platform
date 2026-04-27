@@ -1,0 +1,271 @@
+<!-- evenements/templates/evenements/detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ evenement.nom }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .info-row {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    .facture-item {
+        transition: all 0.2s;
+    }
+    .facture-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(5px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <!-- Carte principale -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        {{ evenement.nom }}
+                    </h4>
+                    <span class="badge bg-light text-dark status-badge">
+                        <i class="fas fa-flag-checkered me-1"></i>
+                        {{ evenement.get_statut_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Infos générales -->
+                <div class="row">
+                    <div class="col-md-12">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-info-circle me-2"></i>Informations générales
+                        </h5>
+                    </div>
+                </div>
+                
+                <div class="row info-row">
+                    <div class="col-md-3 info-label">
+                        <i class="fas fa-building me-2"></i>Client :
+                    </div>
+                    <div class="col-md-9">
+                        <a href="{% url 'clients:detail' evenement.client.pk %}">
+                            <strong>{{ evenement.client.nom }}</strong>
+                        </a>
+                        {% if evenement.client.personne_ressource %}
+                            <br><small class="text-muted">Contact: {{ evenement.client.personne_ressource }}</small>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="row info-row">
+                    <div class="col-md-3 info-label">
+                        <i class="fas fa-calendar-week me-2"></i>Dates :
+                    </div>
+                    <div class="col-md-9">
+                        <i class="far fa-calendar-alt me-1 text-primary"></i>
+                        Du <strong>{{ evenement.date_debut|date:"l d F Y" }}</strong>
+                        {% if evenement.date_fin %}
+                            au <strong>{{ evenement.date_fin|date:"l d F Y" }}</strong>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if evenement.heure_debut %}
+                <div class="row info-row">
+                    <div class="col-md-3 info-label">
+                        <i class="fas fa-clock me-2"></i>Horaires :
+                    </div>
+                    <div class="col-md-9">
+                        <i class="far fa-clock me-1 text-primary"></i>
+                        De <strong>{{ evenement.heure_debut|time:"H:i" }}</strong>
+                        {% if evenement.heure_fin %}
+                            à <strong>{{ evenement.heure_fin|time:"H:i" }}</strong>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if evenement.lieu %}
+                <div class="row info-row">
+                    <div class="col-md-3 info-label">
+                        <i class="fas fa-map-marker-alt me-2"></i>Lieu :
+                    </div>
+                    <div class="col-md-9">
+                        {{ evenement.lieu }}
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Chiffres clés -->
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-chart-line me-2"></i>Chiffres clés
+                        </h5>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                                <h3>{{ evenement.nombre_personnes|default:"0" }}</h3>
+                                <p class="text-muted mb-0">Participants</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <i class="fas fa-file-invoice fa-2x text-info mb-2"></i>
+                                <h3>{{ evenement.factures.count }}</h3>
+                                <p class="text-muted mb-0">Factures liées</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Statut -->
+                <div class="row mt-3">
+                    <div class="col-md-3 info-label">
+                        <i class="fas fa-flag-checkered me-2"></i>Statut :
+                    </div>
+                    <div class="col-md-9">
+                        <span class="badge bg-{% if evenement.statut == 'planifie' %}secondary{% elif evenement.statut == 'confirme' %}success{% elif evenement.statut == 'en_cours' %}primary{% elif evenement.statut == 'termine' %}info{% else %}danger{% endif %} status-badge">
+                            <i class="fas 
+                                {% if evenement.statut == 'planifie' %}fa-clock
+                                {% elif evenement.statut == 'confirme' %}fa-check-circle
+                                {% elif evenement.statut == 'en_cours' %}fa-play
+                                {% elif evenement.statut == 'termine' %}fa-flag-checkered
+                                {% else %}fa-ban{% endif %} me-1"></i>
+                            {{ evenement.get_statut_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Notes -->
+                {% if evenement.notes %}
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-sticky-note me-2"></i>Notes
+                        </h5>
+                        <div class="alert alert-secondary">
+                            {{ evenement.notes|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Factures liées -->
+                {% if evenement.factures.all %}
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-file-invoice me-2"></i>Factures liées
+                        </h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>N° Facture</th>
+                                        <th>Date</th>
+                                        <th>Montant TTC</th>
+                                        <th>Statut</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for facture in evenement.factures.all %}
+                                    <tr class="facture-item">
+                                        <td>
+                                            <a href="{% url 'factures:detail' facture.pk %}">
+                                                <strong>{{ facture.numero }}</strong>
+                                            </a>
+                                        </td>
+                                        <td>{{ facture.date_facture|date:"d/m/Y" }}</td>
+                                        <td>{{ facture.total_ttc|floatformat:2 }} FCFA</td>
+                                        <td>
+                                            <span class="badge bg-{% if facture.statut == 'payee' %}success{% else %}warning{% endif %}">
+                                                {{ facture.get_statut_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'factures:pdf' facture.pk %}" class="btn btn-sm btn-info" target="_blank">
+                                                <i class="fas fa-file-pdf"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th colspan="2" class="text-end">Total :</th>
+                                        <th colspan="3">{{ total_facture|floatformat:2 }} FCFA</th>
+                                    <tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Carte des actions -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-cogs me-2"></i>Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'evenements:modifier' evenement.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit me-2"></i>Modifier
+                    </a>
+                    <a href="{% url 'evenements:supprimer' evenement.pk %}" class="btn btn-danger"
+                       onclick="return confirm('Supprimer cet événement ? Cette action est irréversible.')">
+                        <i class="fas fa-trash me-2"></i>Supprimer
+                    </a>
+                    <hr>
+                    <a href="{% url 'evenements:liste' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informations système -->
+        <div class="card mt-3">
+            <div class="card-header bg-light">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Informations système
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="small">
+                    <strong>Créé le :</strong> {{ evenement.created_at|date:"d/m/Y à H:i" }}<br>
+                    <strong>Modifié le :</strong> {{ evenement.updated_at|date:"d/m/Y à H:i" }}<br>
+                    <strong>ID unique :</strong> #{{ evenement.id }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

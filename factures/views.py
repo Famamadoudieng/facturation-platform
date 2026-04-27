@@ -80,6 +80,11 @@ class FactureCreateView(LoginRequiredMixin, NotLecteurMixin, CreateView):
     model = Facture
     form_class = FactureForm
     template_name = 'factures/form.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request  # ✅ Passer la requête
+        return kwargs    
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -97,8 +102,10 @@ class FactureCreateView(LoginRequiredMixin, NotLecteurMixin, CreateView):
         
         if not self.object.numero:
             self.object.numero = self.object.generer_numero()
-        
+            
         self.object.save()
+        # Sauvegarder les relations many-to-many
+        form.save_m2m()
         
         taux_display = dict(Facture.TAUX_TVA_CHOICES).get(self.object.taux_tva, self.object.taux_tva)
         messages.success(
@@ -125,10 +132,31 @@ class FactureUpdateView(LoginRequiredMixin, NotLecteurMixin, UpdateView):
         # ✅ Sécuriser : ne modifier que les factures de son entreprise
         return Facture.objects.filter(entreprise=self.request.entreprise_courante)
     
+    
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        print(f"=== DEBUG get_context_data ===")
+        print(f"Facture dans context: {self.object.pk if hasattr(self, 'object') else 'Pas de facture'}")
+        print(f"Date facture: {self.object.date_facture if hasattr(self, 'object') else 'None'}")
+        
         context['title'] = f'Modifier la facture {self.object.numero}'
         context['button_text'] = 'Enregistrer les modifications'
+
+        # ✅ Forcer les valeurs initiales dans le formulaire
+        if not self.request.POST:
+            # Initialiser le formulaire avec les valeurs de la facture
+            form = self.get_form()
+            form.initial = {
+                'client': self.object.client.id,
+                'date_facture': self.object.date_facture,
+                'date_echeance': self.object.date_echeance,
+                'taux_tva': self.object.taux_tva,
+                'notes': self.object.notes,
+                'conditions': self.object.conditions,
+            }
+            context['form'] = form
         
         if self.request.POST:
             context['formset'] = LigneFactureFormSet(self.request.POST, instance=self.object)

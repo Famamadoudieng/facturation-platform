@@ -22,15 +22,13 @@ class Facture(models.Model):
         ('payee', 'Payée'),
         ('annulee', 'Annulée'),
         ('impayee', 'Impayée'),
-
     ]
     
-    # TVA Choices - AJOUT DE L'OPTION EXONÉRÉ
+    # TVA Choices
     TAUX_TVA_CHOICES = [
-        (0, '0% (Exonéré)'),
         (10, '10%'),
         (18, '18%'),
-       
+        (0, '0% (Exonéré)'),
     ]
     
     # Informations générales
@@ -44,16 +42,9 @@ class Facture(models.Model):
     type_facture = models.CharField(max_length=20, choices=TYPE_CHOICES, default='proforma', verbose_name="Type de facture")
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='proforma', verbose_name="Statut")
     
-# taux tva
-    taux_tva = models.DecimalField(
-        max_digits=5, 
-        decimal_places=2, 
-        default=18.00, 
-        verbose_name="Taux TVA (%)"
-    )
-
-
-
+    # taux tva
+    taux_tva = models.DecimalField(max_digits=5, decimal_places=2, default=18.00, verbose_name="Taux TVA (%)")
+    
     # Archive
     est_archive = models.BooleanField(default=False, verbose_name="Archivée")
     
@@ -64,14 +55,16 @@ class Facture(models.Model):
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    entreprise = models.ForeignKey(
-        Entreprise, 
-        on_delete=models.CASCADE, 
-        related_name='factures',
-        null=True,
-        blank=True
-    )
+    
+    entreprise = models.ForeignKey(Entreprise, on_delete=models.CASCADE, related_name='factures', null=True, blank=True)
+    
+    # Relation avec événement
+    evenement = models.ForeignKey('evenements.Evenement', on_delete=models.CASCADE, null=True, blank=True, related_name='factures', verbose_name="Événement lié")
+    
+    # Champs pour les commissions
+    commission = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Montant de la commission")
+    taux_commission = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Taux de commission (%)")
+    commissionnaire = models.CharField(max_length=200, blank=True, null=True, verbose_name="Nom du commissionnaire")
     
     class Meta:
         ordering = ['-date_facture']
@@ -81,14 +74,52 @@ class Facture(models.Model):
     def __str__(self):
         return f"{self.numero} - {self.client.nom} - {self.date_facture}"
     
+    # ✅ AJOUTER LA MÉTHODE save() ICI (pas dans LigneFacture)
+    def save(self, *args, **kwargs):
+        """Sauvegarde avec génération automatique du numéro"""
+        print(f"🔍 save() - numero avant: '{self.numero}'")
+        
+        if not self.numero or self.numero == "":
+            self.numero = self.generer_numero()
+            print(f"🔍 Numéro généré: '{self.numero}'")
+        
+        super().save(*args, **kwargs)
+        print(f"✅ Sauvegardé: {self.numero}")
+    
+    # ✅ AJOUTER LA MÉTHODE generer_numero() ICI
+    def generer_numero(self):
+        """Génère un numéro de facture unique"""
+        from datetime import datetime
+        
+        # Utiliser date_facture si disponible
+        date_ref = self.date_facture if self.date_facture else datetime.now().date()
+        annee = date_ref.strftime('%Y')
+        mois = date_ref.strftime('%m')
+        
+        print(f"🔍 generer_numero() - Date: {annee}-{mois}")
+        
+        # Compter les factures du mois
+        compteur = Facture.objects.filter(
+            date_facture__year=int(annee),
+            date_facture__month=int(mois)
+        ).count() + 1
+        
+        numero = f"FACT-{annee}{mois}-{compteur:04d}"
+        
+        # Sécurité anti-doublon
+        while Facture.objects.filter(numero=numero).exists():
+            compteur += 1
+            numero = f"FACT-{annee}{mois}-{compteur:04d}"
+        
+        return numero
+    
+    # Propriétés
     @property
     def est_exonere(self):
-        """Vérifie si la facture est exonérée de TVA"""
         return self.taux_tva == 0
     
     @property
     def total_ht(self):
-        """Calcul du total HT (somme des lignes)"""
         total = Decimal('0.00')
         for ligne in self.lignes.all():
             total += ligne.total_ht
@@ -96,42 +127,35 @@ class Facture(models.Model):
     
     @property
     def montant_tva(self):
-        """Calcul de la TVA sur le total HT"""
         return self.total_ht * (self.taux_tva / Decimal('100'))
     
     @property
     def total_ttc(self):
-        """Calcul du total TTC = HT + TVA"""
         return self.total_ht + self.montant_tva
     
-    def generer_numero(self):
-        """Génère un numéro de facture unique"""
-        from datetime import datetime
-        annee = datetime.now().strftime('%Y')
-        mois = datetime.now().strftime('%m')
-        
-        compteur = Facture.objects.filter(
-            date_creation__year=datetime.now().year, 
-            date_creation__month=datetime.now().month
-        ).count() + 1
-        
-        return f"FACT-{annee}{mois}-{compteur:04d}"
-        #@@@@@@@@@@@@@@@@paiment
     @property
     def total_paye(self):
-        """Total des paiements confirmés"""
         from django.db.models import Sum
-        total = self.paiements.filter(statut='confirme').aggregate(
-            total=Sum('montant')
-        )['total']
+        total = self.paiements.filter(statut='confirme').aggregate(total=Sum('montant'))['total']
         return total or Decimal('0.00')
     
     @property
     def reste_a_payer(self):
-        """Reste à payer"""
         return self.total_ttc - self.total_paye
     
-
+    @property
+    def nom_evenement(self):
+        return self.evenement.nom if self.evenement else None
+    
+    @property
+    def montant_commission(self):
+        if self.taux_commission > 0:
+            return self.total_ttc * (self.taux_commission / Decimal('100'))
+        return self.commission
+    
+    @property
+    def net_a_payer(self):
+        return self.total_ttc - self.montant_commission
 
 
 class LigneFacture(models.Model):
@@ -154,20 +178,14 @@ class LigneFacture(models.Model):
     
     @property
     def total_ht(self):
-        """Total HT de la ligne"""
         return self.quantite * self.prix_unitaire_ht
     
     @property
     def total_ttc(self):
-        """Total TTC de la ligne (identique au HT car TVA au niveau facture)"""
         return self.total_ht
     
-    def save(self, *args, **kwargs):
-        """Auto-remplir les champs si non fournis"""
-        if not self.designation and self.produit:
-            self.designation = self.produit.nom
-        super().save(*args, **kwargs)
-
-
-
-
+    # ✅ SUPPRIMER ces méthodes de LigneFacture !
+    # def save(self, *args, **kwargs):
+    #     ...
+    # def generer_numero(self):
+    #     ...

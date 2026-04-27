@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'parametres',
     'paiements',
     'accounts',
+    'evenements',
     'cloudinary',
     'cloudinary_storage',
 ]
@@ -79,7 +80,7 @@ CLOUDINARY_STORAGE = {
     'API_KEY': '734991893622887',
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+#DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ AJOUTER CETTE LIGNE EN PREMIER
@@ -161,8 +162,8 @@ USE_I18N = True
 USE_TZ = True
 
 # Media files (images uploads)
-#MEDIA_URL = '/media/'
-#MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'mediafiles')
 
 
 # Static files (CSS, JavaScript, Images)

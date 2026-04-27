@@ -1,0 +1,79 @@
+<!-- evenements/templates/evenements/confirm_delete.html -->
+{% extends 'base.html' %}
+
+{% block title %}Supprimer l'événement{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Confirmer la suppression
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-calendar-alt fa-4x text-danger mb-3"></i>
+                    <p class="lead">
+                        Êtes-vous sûr de vouloir supprimer l'événement :
+                        <strong>"{{ evenement.nom }}"</strong> ?
+                    </p>
+                </div>
+
+                <!-- Informations de l'événement -->
+                <div class="alert alert-warning">
+                    <strong><i class="fas fa-info-circle me-2"></i>Informations :</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Client : {{ evenement.client.nom }}</li>
+                        <li>Date : {{ evenement.date_debut|date:"d/m/Y" }}
+                            {% if evenement.date_fin %}
+                                au {{ evenement.date_fin|date:"d/m/Y" }}
+                            {% endif %}
+                        </li>
+                        <li>Statut : {{ evenement.get_statut_display }}</li>
+                        <li>Participants : {{ evenement.nombre_personnes|default:"0" }} personnes</li>
+                    </ul>
+                </div>
+
+                <!-- Avertissement -->
+                <div class="alert alert-danger">
+                    <strong><i class="fas fa-exclamation-circle me-2"></i>Attention !</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Cette action est <strong>irréversible</strong>.</li>
+                        <li>Tous les liens avec les factures seront supprimés.</li>
+                        <li>Les factures liées ne seront pas supprimées, mais perdront le lien vers cet événement.</li>
+                    </ul>
+                </div>
+
+                <!-- Compteurs -->
+                {% if evenement.factures.count > 0 %}
+                <div class="alert alert-info">
+                    <strong><i class="fas fa-file-invoice me-2"></i>Impact sur les factures :</strong>
+                    <p class="mb-0 mt-2">
+                        Cet événement est lié à <strong>{{ evenement.factures.count }} facture(s)</strong>.
+                        La suppression de l'événement ne supprimera pas les factures, 
+                        mais elles ne seront plus associées à cet événement.
+                    </p>
+                </div>
+                {% endif %}
+
+                <!-- Formulaire de confirmation -->
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'evenements:detail' evenement.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Oui, supprimer définitivement
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

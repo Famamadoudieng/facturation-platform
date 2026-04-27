@@ -1,3 +1,4 @@
+<!-- factures/form.html -->
 {% extends 'base.html' %}
 
 {% block title %}{{ title }}{% endblock %}
@@ -13,92 +14,84 @@
                 <form method="post">
                     {% csrf_token %}
                     
-                    <!-- Champ Client -->
+                    <!-- Client -->
                     <div class="mb-3">
-                        <label for="{{ form.client.id_for_label }}" class="form-label">
-                            Client <span class="text-danger">*</span>
-                        </label>
+                        <label class="form-label">Client</label>
                         {{ form.client }}
-                        {% if form.client.errors %}
-                            <div class="text-danger small">{{ form.client.errors }}</div>
-                        {% endif %}
                     </div>
                     
-                    <div class="row">
-                        <!-- Date facture -->
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.date_facture.id_for_label }}" class="form-label">
-                                Date facture <span class="text-danger">*</span>
-                            </label>
-                            {{ form.date_facture }}
-                            {% if form.date_facture.errors %}
-                                <div class="text-danger small">{{ form.date_facture.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Date échéance -->
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.date_echeance.id_for_label }}" class="form-label">
-                                Date échéance <span class="text-danger">*</span>
-                            </label>
-                            {{ form.date_echeance }}
-                            {% if form.date_echeance.errors %}
-                                <div class="text-danger small">{{ form.date_echeance.errors }}</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- ✅ CHOIX TVA (important !) -->
+                    <!-- Événement existant -->
                     <div class="mb-3">
-                        <label for="{{ form.taux_tva.id_for_label }}" class="form-label">
-                            Taux TVA <span class="text-danger">*</span>
-                        </label>
-                        {{ form.taux_tva }}
-                        {% if form.taux_tva.errors %}
-                            <div class="text-danger small">{{ form.taux_tva.errors }}</div>
-                        {% endif %}
-                        <small class="form-text text-muted">
-                            <i class="fas fa-info-circle"></i>
-                            Choisissez 0% pour les clients exonérés de TVA
-                        </small>
+                        <label class="form-label">Événement existant</label>
+                        {{ form.evenement }}
                     </div>
+                    
+                    <!-- Nouvel événement -->
+                    <div class="mb-3">
+                        <label class="form-label">Ou créer un nouvel événement</label>
+                        {{ form.nouvel_evenement }}
+                        <small class="text-muted">Ex: Mariage, Séminaire, Dîner, Conférence...</small>
+                    </div>
+                    
+                    <!-- Dates -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date facture</label>
+                            {{ form.date_facture }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date échéance</label>
+                            {{ form.date_echeance }}
+                        </div>
+                    </div>
+                    
+                    <!-- TVA -->
+                    <div class="mb-3">
+                        <label class="form-label">Taux TVA</label>
+                        {{ form.taux_tva }}
+                    </div>
+
+                  
+
+                    <!-- Commission -->
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0"><i class="fas fa-hand-holding-usd me-2"></i>Commission</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Taux de commission (%)</label>
+                                    {{ form.taux_commission }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Commissionnaire</label>
+                                    {{ form.commissionnaire }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Commission (montant fixe)</label>
+                                    {{ form.commission }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     
                     <!-- Notes -->
                     <div class="mb-3">
-                        <label for="{{ form.notes.id_for_label }}" class="form-label">
-                            Notes internes
-                        </label>
+                        <label class="form-label">Notes internes</label>
                         {{ form.notes }}
-                        {% if form.notes.errors %}
-                            <div class="text-danger small">{{ form.notes.errors }}</div>
-                        {% endif %}
                     </div>
                     
                     <!-- Conditions -->
                     <div class="mb-3">
-                        <label for="{{ form.conditions.id_for_label }}" class="form-label">
-                            Conditions de paiement
-                        </label>
+                        <label class="form-label">Conditions de paiement</label>
                         {{ form.conditions }}
-                        {% if form.conditions.errors %}
-                            <div class="text-danger small">{{ form.conditions.errors }}</div>
-                        {% endif %}
                     </div>
                     
-                    <div class="alert alert-info mt-3">
-                        <i class="fas fa-info-circle"></i>
-                        <strong>Information :</strong> Après avoir créé la facture, 
-                        vous pourrez ajouter des produits. La TVA choisie s'appliquera 
-                        automatiquement sur le total HT.
-                    </div>
-                    
-                    <div class="d-flex justify-content-between mt-4">
-                        <a href="{% url 'factures:list' %}" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> Annuler
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save"></i> {{ button_text }}
-                        </button>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'factures:list' %}" class="btn btn-secondary">Annuler</a>
+                        <button type="submit" class="btn btn-primary">{{ button_text }}</button>
                     </div>
                 </form>
             </div>
