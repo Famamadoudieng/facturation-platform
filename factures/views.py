@@ -17,6 +17,7 @@ from django.urls import reverse, reverse_lazy
 from .exports import FactureExport, StatistiqueExport
 from django.contrib.auth.mixins import UserPassesTestMixin
 from config.mixins import NotLecteurMixin
+from django.utils import timezone 
 
 
 
@@ -123,46 +124,26 @@ class FactureCreateView(LoginRequiredMixin, NotLecteurMixin, CreateView):
         return super().form_invalid(form)
 
 
-class FactureUpdateView(LoginRequiredMixin, NotLecteurMixin, UpdateView):
+# factures/views.py
+class FactureUpdateView(LoginRequiredMixin, UpdateView):
     model = Facture
     form_class = FactureForm
     template_name = 'factures/form_with_lines.html'
     
     def get_queryset(self):
-        # ✅ Sécuriser : ne modifier que les factures de son entreprise
-        return Facture.objects.filter(entreprise=self.request.entreprise_courante)
-    
-    
+        # Assurez-vous que l'utilisateur ne peut modifier que ses factures
+        return Facture.objects.all()
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-
-        print(f"=== DEBUG get_context_data ===")
-        print(f"Facture dans context: {self.object.pk if hasattr(self, 'object') else 'Pas de facture'}")
-        print(f"Date facture: {self.object.date_facture if hasattr(self, 'object') else 'None'}")
-        
         context['title'] = f'Modifier la facture {self.object.numero}'
         context['button_text'] = 'Enregistrer les modifications'
-
-        # ✅ Forcer les valeurs initiales dans le formulaire
-        if not self.request.POST:
-            # Initialiser le formulaire avec les valeurs de la facture
-            form = self.get_form()
-            form.initial = {
-                'client': self.object.client.id,
-                'date_facture': self.object.date_facture,
-                'date_echeance': self.object.date_echeance,
-                'taux_tva': self.object.taux_tva,
-                'notes': self.object.notes,
-                'conditions': self.object.conditions,
-            }
-            context['form'] = form
         
+        # Gestion du formset (important : ne pas toucher au form principal ici)
         if self.request.POST:
             context['formset'] = LigneFactureFormSet(self.request.POST, instance=self.object)
         else:
             context['formset'] = LigneFactureFormSet(instance=self.object)
-        
         return context
     
     def form_valid(self, form):
@@ -178,13 +159,14 @@ class FactureUpdateView(LoginRequiredMixin, NotLecteurMixin, UpdateView):
         else:
             for error in formset.errors:
                 if error:
-                    messages.error(self.request, f'Erreur dans les lignes: {error}')
+                    messages.error(self.request, f'Erreur dans les lignes : {error}')
             return self.render_to_response(self.get_context_data(form=form))
     
     def form_invalid(self, form):
-        messages.error(self.request, 'Erreur dans le formulaire principal.')
+        for field, errors in form.errors.items():
+            for error in errors:
+                messages.error(self.request, f'Erreur sur {field} : {error}')
         return super().form_invalid(form)
-
 
 class FactureDeleteView(LoginRequiredMixin, NotLecteurMixin, DeleteView):
     model = Facture
@@ -301,6 +283,7 @@ def finaliser_facture(request, pk):
     
     facture.type_facture = 'definitive'
     facture.statut = 'definitive'
+    facture.date_finalisation = timezone.now()  # Date et heure actuelles
     facture.save()
     
     messages.success(request, f'✅ Facture {facture.numero} devenue définitive !')

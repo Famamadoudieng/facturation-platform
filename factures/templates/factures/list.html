@@ -57,10 +57,10 @@
                 <select name="statut" class="form-select">
                     <option value="">Tous</option>
                     <option value="proforma" {% if request.GET.statut == 'proforma' %}selected{% endif %}>Proforma</option>
-                    <option value="definitive" {% if request.GET.statut == 'definitive' %}selected{% endif %}>Définitive</option>
-                    <option value="envoyee" {% if request.GET.statut == 'envoyee' %}selected{% endif %}>Envoyée</option>
-                    <option value="partiel" {% if request.GET.statut == 'partiel' %}selected{% endif %}>Partiellement payée</option>
-                    <option value="payee" {% if request.GET.statut == 'payee' %}selected{% endif %}>Payée</option>
+                    <option value="definitive" {% if request.GET.statut == 'definitive' %}selected{% endif %}>En réglement</option>
+                    <!-- <option value="envoyee" {% if request.GET.statut == 'envoyee' %}selected{% endif %}>Envoyée</option>-->
+                    <option value="partiel" {% if request.GET.statut == 'partiel' %}selected{% endif %}>Partiellement soldée</option>
+                    <option value="payee" {% if request.GET.statut == 'payee' %}selected{% endif %}>Soldée</option>
                     <option value="impayee" {% if request.GET.statut == 'impayee' %}selected{% endif %}>Impayée</option>
                     <option value="annulee" {% if request.GET.statut == 'annulee' %}selected{% endif %}>Annulée</option>
                 </select>
@@ -126,12 +126,14 @@
                         <th>Type</th>
                         <th>Statut</th>
                         <th>Total TTC</th>
+                         <th>Commission</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for facture in factures %}
-                    <tr>
+                     {# ✅ Appliquer une classe CSS si commission > 0 #}
+                    <tr class="{% if facture.commissionnaire or facture.taux_commission > 0 or facture.commission > 0 %}has-commission{% endif %}">
                         <td>
                             <strong>{{ facture.numero }}</strong>
                             {% if facture.est_archive %}
@@ -156,6 +158,24 @@
                         <td class="text-end">
                             <strong>{{ facture.total_ttc|floatformat:2 }}</strong> FCFA
                         </td>
+                        <td class="text-end">
+                                {# ✅ Affichage de la commission en dessous du total #}
+                                {% if facture.montant_commission > 0 %}
+                                <div class="text-end mt-1 small">
+                                    <span class="commission-badge">
+                                        <i class="fas fa-percent"></i> 
+                                        Commission: {{ facture.montant_commission|floatformat:0 }} FCFA
+                                        {% if facture.taux_commission > 0 %}
+                                            ({{ facture.taux_commission|floatformat:0 }}%)
+                                        {% endif %}
+                                        {% if facture.commissionnaire %}
+                                            <br><i class="fas fa-user"></i> {{ facture.commissionnaire }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                {% endif %}
+                        </td>
+
                         <td>
                             <div class="btn-group btn-group-sm">
                                 <a href="{% url 'factures:detail' facture.pk %}" class="btn btn-info" title="Voir">
@@ -241,4 +261,35 @@
         {% endif %}
     </div>
 </div>
+
+<!-- Ajoutez ce bloc après le contenu principal, avant {% endblock %} -->
+{% block extra_css %}
+<style>
+    /* ✅ Style pour les factures avec commission */
+    .has-commission {
+        background-color: #fff3cd !important;  /* Jaune clair */
+        transition: all 0.3s ease;
+    }
+    
+    .has-commission:hover {
+        background-color: #ffe69c !important;  /* Jaune plus foncé au survol */
+        transform: scale(1.01);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    /* Badge commission dans la colonne */
+    .commission-badge {
+        display: inline-block;
+        background-color: #ffc107;
+        color: #856404;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    
+    .commission-badge i {
+        margin-right: 4px;
+    }
+</style>
 {% endblock %}

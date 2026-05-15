@@ -1,227 +1,220 @@
-
 {% extends 'base.html' %}
 
 {% block title %}Tableau de bord{% endblock %}
 
-{% block extra_css %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
 
 {% block content %}
-<div>
-    <h1 class="mb-4">
-        <i class="fas fa-chart-line text-primary me-2"></i>
-        Tableau de bord
-    </h1>
-    
-    <!-- Cartes statistiques -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h6 class="card-title">Chiffre d'affaires</h6>
-                    <h3>{{ ca_total|floatformat:2 }} €</h3>
-                    <small>Total général</small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h6 class="card-title">CA ce mois</h6>
-                    <h3>{{ ca_mois|floatformat:2 }} €</h3>
-                    <small>{{ now|date:"F Y" }}</small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <h6 class="card-title">CA {{ now|date:"Y" }}</h6>
-                    <h3>{{ ca_annee|floatformat:2 }} €</h3>
-                    <small>Année en cours</small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h6 class="card-title">Taux de paiement</h6>
-                    <h3>{{ taux_paiement|floatformat:1 }}%</h3>
-                    <small>{{ factures_payees }}/{{ total_factures }} factures</small>
-                </div>
+
+<!-- Cartes statistiques -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Factures</h5>
+                <h2 class="mb-0">{{ total_factures }}</h2>
+                <small>Total</small>
             </div>
         </div>
     </div>
-    
-    <!-- Statistiques factures -->
-    <div class="row mb-4">
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h2 class="text-success">{{ factures_payees }}</h2>
-                    <p>Factures payées</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h2 class="text-warning">{{ factures_en_attente }}</h2>
-                    <p>Factures en attente</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h2 class="text-danger">{{ factures_impayees }}</h2>
-                    <p>Factures impayées</p>
-                </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Sodées</h5>
+                <h2 class="mb-0">{{ factures_payees }}</h2>
+                <small>Taux: {{ taux_paiement|floatformat:1 }}%</small>
             </div>
         </div>
     </div>
-    
-    <!-- Graphiques -->
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-chart-bar me-2"></i>Factures par mois
-                </div>
-                <div class="card-body">
-                    <canvas id="facturesChart" height="250"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-chart-line me-2"></i>Chiffre d'affaires mensuel
-                </div>
-                <div class="card-body">
-                    <canvas id="caChart" height="250"></canvas>
-                </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">En réglement</h5>
+                <h2 class="mb-0">{{ factures_enreglement }}</h2>
+                <small>Total</small>
             </div>
         </div>
     </div>
-    
-    <!-- Top clients et produits -->
-    <div class="row">
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-trophy me-2"></i>Top clients (CA)
-                </div>
-                <div class="card-body">
-                    <canvas id="clientsChart" height="250"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-6 mb-4">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <i class="fas fa-box me-2"></i>Produits les plus vendus
-                </div>
-                <div class="card-body">
-                    <canvas id="produitsChart" height="250"></canvas>
-                </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h5 class="card-title">Impayées</h5>
+                <h2 class="mb-0">{{ factures_impayees }}</h2>
+                <small>À relancer</small>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-// Factures par mois
-const facturesCtx = document.getElementById('facturesChart').getContext('2d');
-const facturesMois = {{ factures_par_mois|safe }};
-new Chart(facturesCtx, {
-    type: 'bar',
-    data: {
-        labels: facturesMois.map(item => item.mois),
-        datasets: [{
-            label: 'Nombre de factures',
-            data: facturesMois.map(item => item.nombre),
-            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-    }
-});
+<!-- Cartes CA -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">CA du mois</h6>
+                <h3 class="text-primary">{{ ca_mois|floatformat:0 }} FCFA</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">CA de l'année</h6>
+                <h3 class="text-success">{{ ca_annee|floatformat:0 }} FCFA</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="text-muted">CA total</h6>
+                <h3 class="text-info">{{ ca_total|floatformat:0 }} FCFA</h3>
+            </div>
+        </div>
+    </div>
+</div>
 
-// Chiffre d'affaires mensuel
-const caCtx = document.getElementById('caChart').getContext('2d');
-const caMois = {{ ca_par_mois|safe }};
-new Chart(caCtx, {
-    type: 'line',
-    data: {
-        labels: caMois.map(item => item.mois),
-        datasets: [{
-            label: 'CA (€)',
-            data: caMois.map(item => item.ca),
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: { y: { beginAtZero: true } }
-    }
-});
+<!-- Tableau des événements confirmés -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-check text-success me-2"></i>
+                    Événements confirmés
+                    <span class="badge bg-success ms-2">{{ evenements_confirme.count }}</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if evenements_confirme %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Événement</th>
+                                <th>Client</th>
+                                <th>Date</th>
+                                <th>Séjour</th>
+                                <th>Lieu</th>
+                                <th>Participants</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in evenements_confirme %}
+                            <tr>
+                                <td><strong>{{ event.nom }}</strong></td>
+                                <td>{{ event.client.nom }}
+                                <td>{{ event.date_debut|date:"d/m/Y" }}
+                                    {% if event.date_fin %}
+                                        <br><small>au {{ event.date_fin|date:"d/m/Y" }}</small>
+                                    {% endif %}
+                                
+                                <td><small>arrivée {{ event.date_arrivee|date:"d/m/Y" }}</small>
+                                    {% if event.date_depart %}
+                                        <br><small>départ {{ event.date_depart|date:"d/m/Y" }} / {{ event.nb_nuits }} nuités</small>
+                                    {% endif %}
 
-// Top clients
-const clientsCtx = document.getElementById('clientsChart').getContext('2d');
-const topClients = {{ top_clients|safe }};
-new Chart(clientsCtx, {
-    type: 'bar',
-    data: {
-        labels: topClients.map(item => item.nom),
-        datasets: [{
-            label: 'CA (€)',
-            data: topClients.map(item => item.ca),
-            backgroundColor: 'rgba(255, 159, 64, 0.5)',
-            borderColor: 'rgba(255, 159, 64, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        indexAxis: 'y'
-    }
-});
+                                <td>{{ event.lieu|default:"-" }}
+                                <td>{{ event.nombre_personnes|default:"0" }}pax
+                                <td>
+                                    <a href="{% url 'evenements:detail' event.pk %}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> Voir
+                                    </a>
+                                   <!-- <a href="{% url 'factures:create' %}?evenement={{ event.pk }}" class="btn btn-sm btn-success">
+                                        <i class="fas fa-file-invoice"></i> Facture
+                                    </a>-->
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <i class="fas fa-calendar-alt fa-3x text-muted mb-2"></i>
+                    <p class="text-muted mb-0">Aucun événement confirmé</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 
-// Top produits
-const produitsCtx = document.getElementById('produitsChart').getContext('2d');
-const topProduits = {{ top_produits|safe }};
-if (topProduits.length > 0) {
-    new Chart(produitsCtx, {
-        type: 'pie',
-        data: {
-            labels: topProduits.map(item => item.nom),
-            datasets: [{
-                data: topProduits.map(item => item.quantite),
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true
-        }
-    });
-}
-</script>
+<!-- Top clients -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-trophy text-warning me-2"></i>
+                    Top 5 clients
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if top_clients %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Factures</th>
+                                <th>CA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for client in top_clients %}
+                            <tr>
+                                <td>{{ client.nom }}
+                                <td>{{ client.factures }}–
+                                <td class="text-success">{{ client.ca|floatformat:0 }} FCFA</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">Aucune donnée</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top produits -->
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-box text-info me-2"></i>
+                    Produits les plus vendus
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if top_produits %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Quantité</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for produit in top_produits %}
+                            <tr>
+                                <td>{{ produit.nom }}
+                                <td>{{ produit.quantite }}–
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">Aucune donnée</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

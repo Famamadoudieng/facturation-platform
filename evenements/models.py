@@ -5,6 +5,23 @@ from parametres.models import Entreprise
 from clients.models import Client
 
 class Evenement(models.Model):
+    # Types d'événements prédéfinis
+    TYPE_CHOICES = [
+        ('Mariage', 'Mariage'),
+        ('Séminaire', 'Séminaire'),
+        ('Conférence', 'Conférence'),
+        ('Anniversaire', 'Anniversaire'),
+        ('Gala', 'Gala'),
+        ('Team Building', 'Team Building'),
+        ('Dîner', 'Dîner'),
+        ('Lunch', 'Lunch'),
+        ('Cocktail', 'Cocktail'),
+        ('Réunion', 'Réunion'),
+        ('Formation', 'Formation'),
+        ('Hebergement', 'Hébergement'),
+        ('Autre', 'Autre'),
+    ]
+    
     STATUT_CHOICES = [
         ('planifie', 'Planifié'),
         ('confirme', 'Confirmé'),
@@ -13,13 +30,21 @@ class Evenement(models.Model):
         ('annule', 'Annulé'),
     ]
     
-    # Informations générales
-    nom = models.CharField(max_length=200, verbose_name="Nom de l'événement")
+    nom = models.CharField(
+        max_length=200, 
+        choices=TYPE_CHOICES,  # ✅ Liste déroulante
+        default='Autre',
+        verbose_name="Nom de l'événement"
+    )
+    
+    
     # ✅ Supprimer type_event (plus besoin)
     
     # Dates
     date_debut = models.DateField(verbose_name="Date de début")
     date_fin = models.DateField(verbose_name="Date de fin", blank=True, null=True)
+    date_arrivee = models.DateField(verbose_name="Date d'arrivée", blank=True, null=True)
+    date_depart = models.DateField(verbose_name="Date de départ", blank=True, null=True)
     heure_debut = models.TimeField(verbose_name="Heure de début", blank=True, null=True)
     heure_fin = models.TimeField(verbose_name="Heure de fin", blank=True, null=True)
     
@@ -45,6 +70,12 @@ class Evenement(models.Model):
         null=True,
         blank=True
     )
+    @property
+    def nb_nuits(self):
+        """Calcule le nombre de nuits (si les deux dates sont renseignées)"""
+        if self.date_arrivee and self.date_depart:
+            return (self.date_depart - self.date_arrivee).days
+        return 0
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)

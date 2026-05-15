@@ -8,6 +8,13 @@
         <i class="fas fa-calendar-alt text-primary me-2"></i>
         Événements
         <span class="badge bg-secondary ms-2">{{ evenements.count }}</span>
+    </h1>
+    <div>
+        <!-- ✅ Bouton Ajouter -->
+        <a href="{% url 'evenements:ajouter' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Nouvel événement
+        </a>
+    </div>
 
 </div>
 
@@ -61,6 +68,9 @@
                         <th>Client</th>
                         <th>Date début</th>
                         <th>Date fin</th>
+                        <th>Date arrivée</th>
+                        <th>Date départ</th>
+                        <th>nb nuités</th>
                         <th>Participants</th>
                         <th>Statut</th>
                         <th>Actions</th>
@@ -75,6 +85,9 @@
                         <td>{{ event.client.nom }}</td>
                         <td>{{ event.date_debut|date:"d/m/Y" }}</td>
                         <td>{{ event.date_fin|date:"d/m/Y"|default:"-" }}</td>
+                        <td>{{ event.date_arrivee|date:"d/m/Y"|default:"-" }}</td>
+                        <td>{{ event.date_depart|date:"d/m/Y"|default:"-" }}</td>
+                        <td>{{ event.nb_nuits|default:"-" }}</td>
                         <td>{{ event.nombre_personnes|default:"-" }}</td>
                         <td>
                             <span class="badge bg-{% if event.statut == 'planifie' %}secondary{% elif event.statut == 'confirme' %}success{% elif event.statut == 'en_cours' %}primary{% elif event.statut == 'termine' %}info{% else %}danger{% endif %}">

@@ -14,6 +14,8 @@ from .forms import UserForm
 from accounts.models import UserProfile
 from accounts.forms import UserProfileForm
 from parametres.forms import UserProfileForm
+from django.contrib.auth.views import PasswordChangeView
+from django.urls import reverse_lazy
 
 # ============================================
 # PARAMÈTRES (accès restreint aux staff)
@@ -446,3 +448,20 @@ def profil_supprimer(request, pk):
         return redirect('parametres:profil_liste')
     
     return render(request, 'parametres/profils/supprimer.html', {'profile': profile})
+
+# ============================================
+# chagement de mot de passe
+# ============================================
+# parametres/views.py
+
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = 'parametres/changer_mot_de_passe.html'
+    success_url = reverse_lazy('parametres:changer_mot_de_passe_succes')
+    
+    def form_valid(self, form):
+        messages.success(self.request, 'Votre mot de passe a été modifié avec succès.')
+        return super().form_valid(form)
+
+def password_change_done(request):
+    return render(request, 'parametres/changer_mot_de_passe_succes.html')

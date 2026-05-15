@@ -17,7 +17,10 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import PageBreak
 from parametres.models import ParametresFacturation
 from pypdf import PdfReader
+from .utils import nombre_en_lettres
 import os
+
+
 
 # ✅ Fonction simple pour la numérotation
 def add_page_number(canvas, doc):
@@ -93,6 +96,13 @@ def generer_pdf_facture(request, pk):
         leading=12,
         fontName='Times-Roman', #'Helvetica',
     )
+    info_style2 = ParagraphStyle(
+        'InfoStyle',
+        parent=styles['Normal'],
+        fontSize=12,
+        leading=12,
+        fontName='Times-Roman', #'Helvetica',
+    )
     
     section_style = ParagraphStyle(
         'SectionStyle',
@@ -125,9 +135,9 @@ def generer_pdf_facture(request, pk):
 
     # Créer le texte du titre avec la date en dessous
     if facture.type_facture == 'proforma':
-        titre_texte = f"FACTURE PROFORMA N° {facture.numero}<br/><font size=9 color='#7f8c8d'> {facture.date_facture.strftime('%d/%m/%Y')}</font>"
+        titre_texte = f"FACTURE PROFORMA N° {facture.numero}<br/><font size=9 color='#7f8c8d'> {facture.date_creation.strftime('%d/%m/%Y')}</font>"
     else:
-        titre_texte = f"FACTURE DÉFINITIVE N° {facture.numero}<br/><font size=9 color='#7f8c8d'>{facture.date_facture.strftime('%d/%m/%Y')}</font><br/><font size=9 color='#d4a23f'>Statut: {facture.get_statut_display()}</font>"
+        titre_texte = f"FACTURE DÉFINITIVE N° {facture.numero}<br/><font size=9 color='#7f8c8d'>{facture.date_finalisation.strftime('%d/%m/%Y')}</font><br/><font size=9 color='#d4a23f'>Statut: {facture.get_statut_display()}</font>"
         #titre_texte = f"FACTURE DÉFINITIVE N° {facture.numero}<br/><font size=9 color='#7f8c8d'>{facture.date_facture.strftime('%d/%m/%Y')}</font>"
 
     titre = Paragraph(titre_texte, title_style)
@@ -185,6 +195,8 @@ def generer_pdf_facture(request, pk):
     destinataire_data = [
         [Paragraph('Destinataire', section_style), ''],
         [Paragraph('Société/Client:', date_style), Paragraph(facture.client.nom, info_style)],
+        [Paragraph('Personne Ressource:', date_style), Paragraph(facture.client.personne_ressource or '', info_style)],
+
         #[Paragraph('Adresse:', date_style), facture.client.adresse or ''],
         [Paragraph('Adresse:', date_style), Paragraph(facture.client.adresse or '', info_style)],
         #['Adresse:', facture.client.adresse or ''],
@@ -221,19 +233,27 @@ def generer_pdf_facture(request, pk):
     
     # === PRESTATION ===
     if facture.notes:
-        elements.append(Paragraph(f"<b>Prestation:</b> {facture.notes}", pres_style))
-        elements.append(Spacer(1, 15))
+        if facture.nb_nuits:
+            elements.append(Paragraph(f"<b>Prestation:</b> {facture.notes} /{facture.nb_nuits} nuités" , pres_style))
+            elements.append(Spacer(1, 15))
+        else:
+            elements.append(Paragraph(f"<b>Prestation:</b> {facture.notes}" , pres_style))
+            elements.append(Spacer(1, 15))
     
+    # === TABLEAU DES PRODUITS ===
     # === TABLEAU DES PRODUITS ===
     elements.append(Paragraph("<b>Détail</b>", section_style))
     elements.append(Spacer(1, 5))
-    
+
     table_data = [['Type', 'Description', 'Prix unitaire', 'Qté', 'Total HT']]
-    
+
     for ligne in facture.lignes.all():
+        # ✅ Vérifier si le produit existe
+        type_produit = ligne.produit.nom[:40] if ligne.produit and ligne.produit.nom else '-'
+    
         table_data.append([
-            Paragraph(ligne.designation[:40], info_style),
-            Paragraph(ligne.designation, info_style),
+            Paragraph(type_produit, info_style),
+            Paragraph(ligne.designation or '-', info_style),
             f"{ligne.prix_unitaire_ht:,.2f} CFA".replace(',', ' '),
             str(ligne.quantite),
             f"{ligne.total_ht:,.2f} CFA".replace(',', ' '),
@@ -269,12 +289,18 @@ def generer_pdf_facture(request, pk):
         #['', ''],
         ['Total TTC', f"{facture.total_ttc:,.2f} CFA".replace(',', ' ')],
     ]
+        # === MONTANT EN LETTRES ===
+    montant_lettres = nombre_en_lettres(facture.total_ttc)
+    lettres_paragraph = Paragraph(f"Arrêtée la présente facture à la somme de : <b>{montant_lettres}</b>", info_style2)
+    #elements.append(lettres_paragraph)
+    #elements.append(Spacer(1, 20))
 
     # ✅ Ajouter les acomptes s'ils existent
-    if facture.total_paye > 0:
+    if facture.total_paye > 0 and facture.reste_a_payer > 0:
         #totals_data.append(['', ''])
         totals_data.append(['Acompte versé', f"{facture.total_paye:,.2f} CFA".replace(',', ' ')])
         totals_data.append(['Reste à payer', f"{facture.reste_a_payer:,.2f} CFA".replace(',', ' ')])
+    
 
     totals_table = Table(totals_data, colWidths=[doc.width - 150, 100])
     totals_table.setStyle(TableStyle([
@@ -310,6 +336,8 @@ def generer_pdf_facture(request, pk):
             ]))
 
     elements.append(totals_table)
+    elements.append(Spacer(1, 20))
+    elements.append(lettres_paragraph)
     elements.append(Spacer(1, 20))
 
 

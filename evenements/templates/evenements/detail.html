@@ -81,6 +81,21 @@
                         {% endif %}
                     </div>
                 </div>
+
+
+                 <div class="row info-row">
+                    <div class="col-md-3 info-label">
+                        <i class="fas fa-calendar-week me-2"></i>séjour :
+                    </div>
+                    <div class="col-md-9">
+                        <i class="far fa-calendar-alt me-1 text-primary"></i>
+                        Arrivée <strong>{{ evenement.date_arrivee|date:"l d F Y" }}</strong>
+                        {% if evenement.date_depart %}
+                            /Départ <strong>{{ evenement.date_depart|date:"l d F Y" }}</strong>
+                            /Nb nuités <strong>{{ evenement.nb_nuits }}</strong>
+                        {% endif %}
+                    </div>
+                </div>
                 
                 {% if evenement.heure_debut %}
                 <div class="row info-row">
@@ -127,6 +142,10 @@
                             </div>
                         </div>
                     </div>
+
+
+                    
+
                     <div class="col-md-4 mb-3">
                         <div class="card bg-light">
                             <div class="card-body text-center">

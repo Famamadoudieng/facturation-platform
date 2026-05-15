@@ -46,14 +46,34 @@
                     {{ facture.client.adresse }}
                 </p>
             </div>
+
             <div class="col-md-6 text-end">
                 <h5>Détails</h5>
                 <p>
                     <strong>Date facture :</strong> {{ facture.date_facture|date:"d/m/Y" }}<br>
                     <strong>Date échéance :</strong> {{ facture.date_echeance|date:"d/m/Y" }}<br>
                     <strong>Date création :</strong> {{ facture.date_creation|date:"d/m/Y H:i" }}
+                    <!-- Dans factures/templates/factures/detail.html -->
+                    {% if facture.date_finalisation %}
+                    <div class="info-box">
+                        <span class="label">Date de finalisation :</span>
+                        <span class="value">{{ facture.date_finalisation|date:"d/m/Y à H:i" }}</span>
+                    </div>
+{% endif %}
+                
+                
                 </p>
             </div>
+            <!--@@@@@@@@@@@@@@@@@@@@@@@-->
+            <!-- Dates d'hébergement -->
+            {% if facture.date_arrivee and facture.date_depart %}
+            <div class="mt-3">
+                <strong>Séjour :</strong><br>
+                Arrivée : {{ facture.date_arrivee|date:"d/m/Y" }}<br>
+                Départ : {{ facture.date_depart|date:"d/m/Y" }}<br>
+                <strong>Nombre de nuits : {{ facture.nb_nuits }}</strong>
+            </div>
+            {% endif %}
         </div>
         
         <!-- Tableau des lignes -->
@@ -233,10 +253,10 @@
                                         </a>
                                         {% if paiement.statut == 'confirme' %}
                                             <!-- ✅ BOUTON MODIFIER - AJOUTE ICI -->
-                                            <a href="{% url 'paiements:modifier' paiement.pk %}" 
+                                            <!--<a href="{% url 'paiements:modifier' paiement.pk %}" 
                                             class="btn btn-warning" title="Modifier">
                                                 <i class="fas fa-edit"></i>
-                                            </a>
+                                            </a>-->
                                             <a href="{% url 'paiements:annuler' paiement.pk %}" 
                                             class="btn btn-danger"
                                             onclick="return confirm('Annuler ce paiement ?')"

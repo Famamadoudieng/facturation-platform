@@ -36,7 +36,7 @@
                         {% if form.nom.errors %}
                             <div class="text-danger small">{{ form.nom.errors }}</div>
                         {% endif %}
-                        <small class="text-muted">Ex: Séminaire, Mariage ...</small>
+                        
                     </div>
                     
                     
@@ -52,6 +52,8 @@
                         </div>
                     </div>
                     
+                    <!-- ... début du template inchangé ... -->
+
                     <div class="row">
                         <!-- Date début -->
                         <div class="col-md-6 mb-3">
@@ -61,7 +63,7 @@
                                 <div class="text-danger small">{{ form.date_debut.errors }}</div>
                             {% endif %}
                         </div>
-                        
+    
                         <!-- Date fin -->
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Date de fin</label>
@@ -72,6 +74,30 @@
                             <small class="text-muted">Optionnel</small>
                         </div>
                     </div>
+
+                    <!-- Nouvelle ligne pour date_arrivee et date_depart -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date d'arrivée</label>
+                            {{ form.date_arrivee }}
+                            {% if form.date_arrivee.errors %}
+                                <div class="text-danger small">{{ form.date_arrivee.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Optionnelle</small>
+                        </div>
+    
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date de départ</label>
+                            {{ form.date_depart }}
+                            {% if form.date_depart.errors %}
+                                <div class="text-danger small">{{ form.date_depart.errors }}</div>
+                            {% endif %}
+                            <small class="text-muted">Optionnelle</small>
+                        </div>
+                    </div>
+
+<!-- Heure début/fin, lieu, etc. -->
+<!-- ... le reste du template, sauf la section "Adresse complète" à supprimer ... -->
                     
                     <div class="row">
                         <!-- Heure début -->
@@ -115,25 +141,7 @@
                         </div>
                     </div>
                     
-                    <!-- Adresse complète -->
-                    <div class="mb-3">
-                        <label class="form-label">Adresse complète</label>
-                        {{ form.adresse }}
-                        {% if form.adresse.errors %}
-                            <div class="text-danger small">{{ form.adresse.errors }}</div>
-                        {% endif %}
-                        <small class="text-muted">Adresse détaillée du lieu de l'événement</small>
-                    </div>
                     
-                    <div class="row">
-                        <!-- Budget prévu -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Budget prévu (FCFA)</label>
-                            {{ form.budget_prevu }}
-                            {% if form.budget_prevu.errors %}
-                                <div class="text-danger small">{{ form.budget_prevu.errors }}</div>
-                            {% endif %}
-                        </div>
                         
                         <!-- Statut -->
                         <div class="col-md-6 mb-3">

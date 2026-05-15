@@ -21,16 +21,16 @@
                     </div>
                     
                     <!-- Événement existant -->
+                    <!-- factures/form.html -->
+                    <!-- Ajoute le champ type d'événement après le client -->
+
                     <div class="mb-3">
-                        <label class="form-label">Événement existant</label>
-                        {{ form.evenement }}
-                    </div>
-                    
-                    <!-- Nouvel événement -->
-                    <div class="mb-3">
-                        <label class="form-label">Ou créer un nouvel événement</label>
-                        {{ form.nouvel_evenement }}
-                        <small class="text-muted">Ex: Mariage, Séminaire, Dîner, Conférence...</small>
+                        <label class="form-label">Type d'événement</label>
+                        {{ form.type_evenement }}
+                        <small class="text-muted">Sélectionnez le type d'événement (Mariage, Séminaire, etc.)</small>
+                        {% if form.type_evenement.errors %}
+                            <div class="text-danger small">{{ form.type_evenement.errors }}</div>
+                        {% endif %}
                     </div>
                     
                     <!-- Dates -->
@@ -42,6 +42,14 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Date échéance</label>
                             {{ form.date_echeance }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date Arrivée</label>
+                            {{ form.date_arrivee }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Date départ</label>
+                            {{ form.date_depart }}
                         </div>
                     </div>
                     

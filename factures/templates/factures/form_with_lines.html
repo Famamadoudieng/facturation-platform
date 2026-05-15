@@ -11,9 +11,6 @@
         border-radius: 5px;
         border: 1px solid #dee2e6;
     }
-    .delete-row {
-        margin-top: 32px;
-    }
     .formset-header {
         background-color: #e9ecef;
         padding: 10px;
@@ -36,7 +33,7 @@
                     <form method="post" id="factureForm">
                         {% csrf_token %}
                         
-                        <!-- Formulaire principal -->
+                        <!-- Informations générales -->
                         <div class="row">
                             <div class="col-md-12">
                                 <h5><i class="fas fa-info-circle"></i> Informations générales</h5>
@@ -44,52 +41,84 @@
                             </div>
                         </div>
                         
+                        <!-- Client -->
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Client *</label>
                                 {{ form.client }}
+                                {% if form.client.errors %}<div class="text-danger">{{ form.client.errors }}</div>{% endif %}
                             </div>
                         </div>
                         
+                        <!-- Dates -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Date facture *</label>
-                                <input type="date" name="date_facture" class="form-control" 
-                                    value="{{ form.date_facture.value|date:'Y-m-d' }}">
+                                <input type="date" name="date_facture" class="form-control" value="{{ form.date_facture.value|date:'Y-m-d' }}">
+                                {% if form.date_facture.errors %}<div class="text-danger">{{ form.date_facture.errors }}</div>{% endif %}
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Date échéance *</label>
-                                <input type="date" name="date_echeance" class="form-control" 
-                                    value="{{ form.date_echeance.value|date:'Y-m-d' }}">
+                                <input type="date" name="date_echeance" class="form-control" value="{{ form.date_echeance.value|date:'Y-m-d' }}">
+                                {% if form.date_echeance.errors %}<div class="text-danger">{{ form.date_echeance.errors }}</div>{% endif %}
                             </div>
                         </div>
                         
-                        <div class="alert alert-warning">
-                            Valeur TVA dans le formulaire: {{ form.taux_tva.value }}%
-                        </div>
-
+                        <!-- Taux TVA -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Taux TVA *</label>
-                                {{ form.taux_tva }}
-                                <small class="form-text text-muted">
-                                    <i class="fas fa-info-circle"></i>
-                                    Choisissez 0% pour les clients exonérés
-                                </small>
+                                <select name="taux_tva" class="form-select">
+                                    <option value="10" {% if form.taux_tva.value == 10 %}selected{% endif %}>10%</option>
+                                    <option value="18" {% if form.taux_tva.value == 18 %}selected{% endif %}>18%</option>
+                                    <option value="0" {% if form.taux_tva.value == 0 %}selected{% endif %}>0% (Exonéré)</option>
+                                </select>
+                                <small class="form-text text-muted">Choisissez 0% pour les clients exonérés</small>
+                                {% if form.taux_tva.errors %}<div class="text-danger">{{ form.taux_tva.errors }}</div>{% endif %}
                             </div>
                         </div>
                         
+                        <!-- Événement (si présent dans le formulaire) -->
+                        {% if form.evenement %}
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Événement associé</label>
+                                {{ form.evenement }}
+                                <small class="form-text text-muted">Optionnel</small>
+                                {% if form.evenement.errors %}<div class="text-danger">{{ form.evenement.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Commissions -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Commission (montant)</label>
+                                {{ form.commission }}
+                                <small class="form-text text-muted">Optionnel</small>
+                                {% if form.commission.errors %}<div class="text-danger">{{ form.commission.errors }}</div>{% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Taux de commission (%)</label>
+                                {{ form.taux_commission }}
+                                <small class="form-text text-muted">Optionnel</small>
+                                {% if form.taux_commission.errors %}<div class="text-danger">{{ form.taux_commission.errors }}</div>{% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Notes et conditions -->
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Notes internes</label>
                                 {{ form.notes }}
+                                {% if form.notes.errors %}<div class="text-danger">{{ form.notes.errors }}</div>{% endif %}
                             </div>
                         </div>
-                        
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Conditions de paiement</label>
                                 {{ form.conditions }}
+                                {% if form.conditions.errors %}<div class="text-danger">{{ form.conditions.errors }}</div>{% endif %}
                             </div>
                         </div>
                         
@@ -114,18 +143,10 @@
                         <div id="formset-container">
                             {% for ligne_form in formset %}
                             <div class="formset-row row" data-row-index="{{ forloop.counter0 }}">
-                                <div class="col-md-4">
-                                    {{ ligne_form.produit }}
-                                </div>
-                                <div class="col-md-3">
-                                    {{ ligne_form.designation }}
-                                </div>
-                                <div class="col-md-2">
-                                    {{ ligne_form.quantite }}
-                                </div>
-                                <div class="col-md-2">
-                                    {{ ligne_form.prix_unitaire_ht }}
-                                </div>
+                                <div class="col-md-4">{{ ligne_form.produit }}</div>
+                                <div class="col-md-3">{{ ligne_form.designation }}</div>
+                                <div class="col-md-2">{{ ligne_form.quantite }}</div>
+                                <div class="col-md-2">{{ ligne_form.prix_unitaire_ht }}</div>
                                 <div class="col-md-1">
                                     {% if ligne_form.instance.pk %}
                                         <div class="form-check">
@@ -134,9 +155,7 @@
                                         </div>
                                     {% endif %}
                                 </div>
-                                {% for hidden in ligne_form.hidden_fields %}
-                                    {{ hidden }}
-                                {% endfor %}
+                                {% for hidden in ligne_form.hidden_fields %}{{ hidden }}{% endfor %}
                             </div>
                             {% endfor %}
                         </div>
@@ -147,7 +166,8 @@
                             <strong>Récapitulatif :</strong><br>
                             Total HT : <strong id="total-ht">0</strong> FCFA<br>
                             TVA (<span id="tva-taux">{{ form.instance.taux_tva|default:"18" }}</span>%) : <strong id="total-tva">0</strong> FCFA<br>
-                            <strong>Total TTC : <span id="total-ttc">0</span> FCFA</strong>
+                            <strong>Total TTC : <span id="total-ttc">0</span> FCFA</strong><br>
+                            <strong>Net à payer : <span id="net-a-payer">0</span> FCFA</strong>
                         </div>
                         
                         <div class="d-flex justify-content-between mt-4">
@@ -168,98 +188,55 @@
 
 {% block extra_js %}
 <script>
-    // Fonction pour calculer les totaux
     function calculerTotaux() {
         let totalHT = 0;
-        
-        // Parcourir toutes les lignes de facture
         document.querySelectorAll('.formset-row').forEach(row => {
-            // Vérifier si la ligne n'est pas marquée pour suppression
-            const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="DELETE"]');
-            if (deleteCheckbox && deleteCheckbox.checked) {
-                return; // Ignorer cette ligne
-            }
-            
-            const quantiteInput = row.querySelector('input[name$="quantite"]');
-            const prixInput = row.querySelector('input[name$="prix_unitaire_ht"]');
-            
-            if (quantiteInput && prixInput) {
-                const quantite = parseFloat(quantiteInput.value) || 0;
-                const prix = parseFloat(prixInput.value) || 0;
-                totalHT += quantite * prix;
+            const del = row.querySelector('input[type="checkbox"][name$="DELETE"]');
+            if (del && del.checked) return;
+            const qty = row.querySelector('input[name$="quantite"]');
+            const price = row.querySelector('input[name$="prix_unitaire_ht"]');
+            if (qty && price) {
+                totalHT += (parseFloat(qty.value) || 0) * (parseFloat(price.value) || 0);
             }
         });
-        
-        // Récupérer le taux de TVA
-        const tauxTvaSelect = document.querySelector('select[name="taux_tva"]');
-        const tauxTVA = tauxTvaSelect ? parseFloat(tauxTvaSelect.value) : 18;
-        
-        // Calculer TVA et TTC
-        const totalTVA = totalHT * tauxTVA / 100;
-        const totalTTC = totalHT + totalTVA;
-        
-        // Mettre à jour l'affichage
-        document.getElementById('total-ht').textContent = totalHT.toFixed(2);
-        document.getElementById('total-tva').textContent = totalTVA.toFixed(2);
-        document.getElementById('total-ttc').textContent = totalTTC.toFixed(2);
-        document.getElementById('tva-taux').textContent = tauxTVA;
+        const taux = parseFloat(document.querySelector('select[name="taux_tva"]')?.value || 18);
+        const tva = totalHT * taux / 100;
+        let ttc = totalHT + tva;
+        let commission = 0;
+        const commMontant = document.querySelector('input[name="commission"]');
+        const commTaux = document.querySelector('input[name="taux_commission"]');
+        if (commMontant && commMontant.value) commission = parseFloat(commMontant.value) || 0;
+        else if (commTaux && commTaux.value) commission = ttc * (parseFloat(commTaux.value) / 100);
+        const net = ttc - commission;
+        document.getElementById('total-ht').innerText = totalHT.toFixed(2);
+        document.getElementById('total-tva').innerText = tva.toFixed(2);
+        document.getElementById('total-ttc').innerText = ttc.toFixed(2);
+        document.getElementById('net-a-payer').innerText = net.toFixed(2);
+        document.getElementById('tva-taux').innerText = taux;
     }
-    
-    // Écouter tous les changements
-    function initEventListeners() {
-        // Changement sur les quantités et prix
-        document.querySelectorAll('input[name$="quantite"], input[name$="prix_unitaire_ht"]').forEach(input => {
-            input.removeEventListener('change', calculerTotaux);
-            input.addEventListener('change', calculerTotaux);
-            input.removeEventListener('keyup', calculerTotaux);
-            input.addEventListener('keyup', calculerTotaux);
+    function bindEvents() {
+        document.querySelectorAll('input[name$="quantite"], input[name$="prix_unitaire_ht"], input[name="commission"], input[name="taux_commission"]').forEach(el => {
+            el.removeEventListener('input', calculerTotaux);
+            el.addEventListener('input', calculerTotaux);
         });
-        
-        // Changement sur le taux TVA
-        const tauxTvaSelect = document.querySelector('select[name="taux_tva"]');
-        if (tauxTvaSelect) {
-            tauxTvaSelect.removeEventListener('change', calculerTotaux);
-            tauxTvaSelect.addEventListener('change', calculerTotaux);
-        }
-        
-        // Changement sur les cases à cocher suppression
-        document.querySelectorAll('input[type="checkbox"][name$="DELETE"]').forEach(checkbox => {
-            checkbox.removeEventListener('change', calculerTotaux);
-            checkbox.addEventListener('change', calculerTotaux);
+        document.querySelector('select[name="taux_tva"]')?.addEventListener('change', calculerTotaux);
+        document.querySelectorAll('input[type="checkbox"][name$="DELETE"]').forEach(cb => {
+            cb.removeEventListener('change', calculerTotaux);
+            cb.addEventListener('change', calculerTotaux);
         });
     }
-    
-    // Observer les changements dans le DOM (pour les nouvelles lignes)
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                initEventListeners();
-                calculerTotaux();
-            }
-        });
-    });
-    
-    // Démarrer l'observation
-    observer.observe(document.getElementById('formset-container'), { childList: true, subtree: true });
-    
-    // Initialiser au chargement
-    document.addEventListener('DOMContentLoaded', function() {
-        initEventListeners();
+    document.addEventListener('DOMContentLoaded', () => {
+        bindEvents();
         calculerTotaux();
+        const observer = new MutationObserver(() => { bindEvents(); calculerTotaux(); });
+        observer.observe(document.getElementById('formset-container'), { childList: true, subtree: true });
     });
-    
-    // Auto-remplir la désignation quand on sélectionne un produit
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.matches('select[name$="produit"]')) {
-            const select = e.target;
-            const row = select.closest('.formset-row');
-            const designationInput = row.querySelector('input[name$="designation"]');
-            
-            if (select.value && designationInput) {
-                const selectedOption = select.options[select.selectedIndex];
-                designationInput.value = selectedOption.text;
-                calculerTotaux();
-            }
+    document.addEventListener('change', e => {
+        if (e.target.matches('select[name$="produit"]')) {
+            const row = e.target.closest('.formset-row');
+            const desig = row.querySelector('input[name$="designation"]');
+            if (e.target.value && desig) desig.value = e.target.options[e.target.selectedIndex]?.text || '';
+            calculerTotaux();
         }
     });
 </script>

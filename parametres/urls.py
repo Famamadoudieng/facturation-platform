@@ -29,6 +29,9 @@ urlpatterns = [
     path('profils/creer/', views.profil_creer, name='profil_creer'),
     path('profils/<int:pk>/modifier/', views.profil_modifier, name='profil_modifier'),
     path('profils/<int:pk>/supprimer/', views.profil_supprimer, name='profil_supprimer'),
+    # chagement de mot de passe
+    path('changer-mot-de-passe/', views.CustomPasswordChangeView.as_view(), name='changer_mot_de_passe'),
+    path('changer-mot-de-passe/succes/', views.password_change_done, name='changer_mot_de_passe_succes'),
 
 
 ]

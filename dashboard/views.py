@@ -1,3 +1,4 @@
+# dashboard/views.py
 from django.shortcuts import render, redirect
 from django.db.models import Sum, Count
 from django.contrib.auth.decorators import login_required
@@ -9,12 +10,13 @@ from factures.models import Facture, LigneFacture
 from clients.models import Client
 from produits.models import Produit
 from paiements.models import Paiement
+from evenements.models import Evenement  # ✅ Ajouter l'import
 
 
 def connexion(request):
     """Page de connexion personnalisée"""
     if request.user.is_authenticated:
-        return redirect('/')  # ✅ Redirige vers la racine
+        return redirect('/')
     
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -24,17 +26,19 @@ def connexion(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'Bienvenue {user.username}!')
-            return redirect('/')  # ✅ Redirige vers la racine
+            return redirect('/')
         else:
             messages.error(request, 'Nom d\'utilisateur ou mot de passe incorrect')
             return render(request, 'dashboard/connexion.html')
     
     return render(request, 'dashboard/connexion.html')
 
+
 @login_required
 def home(request):
     """Page d'accueil après connexion"""
     return render(request, 'dashboard/home.html')
+
 
 @login_required
 def dashboard(request):
@@ -75,32 +79,12 @@ def dashboard(request):
     total_factures = factures.count()
     factures_payees = factures.filter(statut='payee').count()
     factures_impayees = factures.filter(statut='impayee').count()
+    factures_enreglement = factures.filter(statut='definitive').count()
+    factures_annulees= factures.filter(statut='annulees').count()
     factures_en_attente = factures.filter(statut__in=['envoyee', 'proforma', 'definitive']).count()
     
     # Taux de paiement
     taux_paiement = (factures_payees / total_factures * 100) if total_factures > 0 else 0
-    
-    # === FACTURES PAR MOIS (12 derniers mois) ===
-    factures_par_mois = []
-    ca_par_mois = []
-    
-    for i in range(11, -1, -1):
-        date = datetime(now.year, now.month, 1) - timedelta(days=30*i)
-        mois = date.strftime('%b %Y')
-        
-        # Nombre de factures
-        nb_factures = factures.filter(
-            date_facture__year=date.year,
-            date_facture__month=date.month
-        ).count()
-        
-        # CA du mois
-        ca_mois_data = Decimal('0.00')
-        for facture in factures.filter(statut='payee', date_facture__year=date.year, date_facture__month=date.month):
-            ca_mois_data += facture.total_ttc
-        
-        factures_par_mois.append({'mois': mois, 'nombre': nb_factures})
-        ca_par_mois.append({'mois': mois, 'ca': float(ca_mois_data)})
     
     # === TOP CLIENTS ===
     top_clients = []
@@ -133,6 +117,12 @@ def dashboard(request):
     for nom, quantite in sorted(produits_vendus.items(), key=lambda x: x[1], reverse=True)[:5]:
         top_produits.append({'nom': nom, 'quantite': quantite})
     
+    # ✅ ÉVÉNEMENTS CONFIRMÉS
+    evenements_confirme = Evenement.objects.filter(
+        entreprise=entreprise,
+        statut='confirme'
+    ).select_related('client').order_by('date_debut')
+    
     context = {
         'entreprise_courante': entreprise,
         'ca_total': float(ca_total),
@@ -141,14 +131,14 @@ def dashboard(request):
         'total_factures': total_factures,
         'factures_payees': factures_payees,
         'factures_impayees': factures_impayees,
+        'factures_enreglement': factures_enreglement,
+        'factures_annulees': factures_annulees,
         'factures_en_attente': factures_en_attente,
         'taux_paiement': taux_paiement,
-        'factures_par_mois': factures_par_mois,
-        'ca_par_mois': ca_par_mois,
         'top_clients': top_clients,
         'top_produits': top_produits,
         'now': now,
+        'evenements_confirme': evenements_confirme,  # ✅ Ajouter les événements
     }
     
-   
     return render(request, 'dashboard/index.html', context)

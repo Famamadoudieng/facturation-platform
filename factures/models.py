@@ -16,10 +16,10 @@ class Facture(models.Model):
     # Statuts de facture
     STATUT_CHOICES = [
         ('proforma', 'Proforma'),
-        ('definitive', 'Définitive'),
+        ('definitive', 'En réglement'),
         ('envoyee', 'Envoyée'),
-        ('partiel', 'Partiellement payée'),
-        ('payee', 'Payée'),
+        ('partiel', 'Partiellement soldé'),
+        ('payee', 'Soldé'),
         ('annulee', 'Annulée'),
         ('impayee', 'Impayée'),
     ]
@@ -37,7 +37,11 @@ class Facture(models.Model):
     date_creation = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     date_facture = models.DateField(verbose_name="Date de facture")
     date_echeance = models.DateField(verbose_name="Date d'échéance")
-    
+    # ✅ Ajouter ce champ pour la date de finalisation
+    date_finalisation = models.DateTimeField( null=True, blank=True, verbose_name="Date de finalisation")
+    # les dates pour hebeergement
+    date_arrivee = models.DateField(null=True, blank=True, verbose_name="Date d'arrivée")
+    date_depart = models.DateField(null=True, blank=True, verbose_name="Date de départ")
     # Type et Statut
     type_facture = models.CharField(max_length=20, choices=TYPE_CHOICES, default='proforma', verbose_name="Type de facture")
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='proforma', verbose_name="Statut")
@@ -77,14 +81,14 @@ class Facture(models.Model):
     # ✅ AJOUTER LA MÉTHODE save() ICI (pas dans LigneFacture)
     def save(self, *args, **kwargs):
         """Sauvegarde avec génération automatique du numéro"""
-        print(f"🔍 save() - numero avant: '{self.numero}'")
+        #print(f"🔍 save() - numero avant: '{self.numero}'")
         
         if not self.numero or self.numero == "":
             self.numero = self.generer_numero()
             print(f"🔍 Numéro généré: '{self.numero}'")
         
         super().save(*args, **kwargs)
-        print(f"✅ Sauvegardé: {self.numero}")
+        #print(f"✅ Sauvegardé: {self.numero}")
     
     # ✅ AJOUTER LA MÉTHODE generer_numero() ICI
     def generer_numero(self):
@@ -96,7 +100,7 @@ class Facture(models.Model):
         annee = date_ref.strftime('%Y')
         mois = date_ref.strftime('%m')
         
-        print(f"🔍 generer_numero() - Date: {annee}-{mois}")
+        #print(f"🔍 generer_numero() - Date: {annee}-{mois}")
         
         # Compter les factures du mois
         compteur = Facture.objects.filter(
@@ -157,6 +161,12 @@ class Facture(models.Model):
     def net_a_payer(self):
         return self.total_ttc - self.montant_commission
 
+    @property
+    def nb_nuits(self):
+        """Calcule le nombre de nuits (si les deux dates sont renseignées)"""
+        if self.date_arrivee and self.date_depart:
+            return (self.date_depart - self.date_arrivee).days
+        return 0
 
 class LigneFacture(models.Model):
     facture = models.ForeignKey(Facture, on_delete=models.CASCADE, related_name='lignes', verbose_name="Facture")
@@ -183,9 +193,4 @@ class LigneFacture(models.Model):
     @property
     def total_ttc(self):
         return self.total_ht
-    
-    # ✅ SUPPRIMER ces méthodes de LigneFacture !
-    # def save(self, *args, **kwargs):
-    #     ...
-    # def generer_numero(self):
-    #     ...
+  
